@@ -53,7 +53,27 @@ impl App {
     }
 
     fn render(&mut self, frame: &mut Frame) {
-        let title = Line::from("Arfima").bold().blue().centered();
+        let mut title_items: Vec<Span> = vec![
+            Span::styled("", Style::default()),
+            Span::styled(" root ", Style::default().reversed()),
+            Span::styled("╱", Style::default().reversed().bg(Color::Reset)),
+        ];
+
+        for directory in self.directory[1..].split("/") {
+            title_items.push(Span::styled(
+                format!(" {} ", directory),
+                Style::default().reversed(),
+            ));
+            title_items.push(Span::styled(
+                "╱",
+                Style::default().reversed().bg(Color::Reset),
+            ));
+        }
+
+        title_items.pop();
+        title_items.push(Span::styled("", Style::default()));
+
+        let title = Line::from(title_items).bold();
 
         let instructions = Line::from(vec![
             " Up ".into(),
