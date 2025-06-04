@@ -1,36 +1,44 @@
-mod entries_component;
+mod centered_rect;
+mod components;
 mod error;
-mod instructions_component;
-mod title_component;
+mod key_event_handler;
+mod show_modal;
 
-use std::path::Path;
+use std::{fs, path::Path};
 
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
-use entries_component::EnteriesComponent;
-use instructions_component::InstructionsComponent;
+use crossterm::event::{self, Event, KeyEvent, KeyEventKind};
+use key_event_handler::handle_key_event;
 use ratatui::{
     DefaultTerminal, Frame,
     widgets::{Block, TableState},
 };
-use title_component::TitleComponent;
+use show_modal::show_modal;
 
-use crate::{
-    directory_entry::{DirectoryEntry, DirectoryEntryType, read_directory},
-    utils::open_file,
-};
+use crate::directory_entry::{DirectoryEntry, read_directory};
+use centered_rect::centered_rect;
+use components::{EntriesComponent, InstructionsComponent, TitleComponent};
 use error::Error;
 
-#[derive(Debug, Default)]
-pub struct App {
+#[derive(Debug)]
+pub enum InputMode<'a> {
+    Normal,
+    Adding { buffer: String },
+    Renaming { original: String, buffer: String },
+    Removing { path: &'a Path },
+}
+
+#[derive(Debug)]
+pub struct App<'a> {
     running: bool,
     directory: String,
     entries: Vec<DirectoryEntry>,
     selected_index: usize,
+    input_mode: InputMode<'a>,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-impl App {
+impl App<'_> {
     pub fn new(directory: String) -> Result<Self> {
         let path = Path::new(&directory);
 
@@ -43,6 +51,7 @@ impl App {
             entries: read_directory(path)?,
             directory,
             selected_index: 0,
+            input_mode: InputMode::Normal,
         })
     }
 
@@ -60,12 +69,16 @@ impl App {
             .title(TitleComponent::get(&self.directory))
             .title_bottom(InstructionsComponent::get());
 
-        let table = EnteriesComponent::get(&self.entries).block(block);
+        let table = EntriesComponent::get(&self.entries).block(block);
 
         let mut state = TableState::default();
         state.select(Some(self.selected_index));
 
         frame.render_stateful_widget(table, frame.area(), &mut state);
+
+        if let InputMode::Adding { buffer } = &self.input_mode {
+            show_modal("Add directory/file", frame, buffer);
+        }
     }
 
     fn handle_crossterm_events(&mut self) -> Result<()> {
@@ -79,38 +92,7 @@ impl App {
     }
 
     fn on_key_event(&mut self, key: KeyEvent) {
-        match (key.modifiers, key.code) {
-            (_, KeyCode::Esc | KeyCode::Char('q'))
-            | (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => self.quit(),
-            (_, KeyCode::Down | KeyCode::Char('j')) => {
-                if self.selected_index + 1 < self.entries.len() {
-                    self.selected_index += 1;
-                }
-            }
-            (_, KeyCode::Up | KeyCode::Char('k')) => {
-                if self.selected_index > 0 {
-                    self.selected_index -= 1;
-                }
-            }
-            (_, KeyCode::Left | KeyCode::Char('h') | KeyCode::Backspace) => {
-                if let Some(parent) = Path::new(&self.directory).parent() {
-                    let _ = self.set_directory(parent.to_string_lossy().to_string());
-                }
-            }
-            (_, KeyCode::Right | KeyCode::Char('l') | KeyCode::Enter) => {
-                if let Some(entry) = self.entries.get(self.selected_index) {
-                    match entry.entry_type() {
-                        DirectoryEntryType::Directory => {
-                            let _ = self.set_directory(entry.path().to_string_lossy().to_string());
-                        }
-                        _ => {
-                            let _ = open_file(entry.path());
-                        }
-                    }
-                }
-            }
-            _ => {}
-        }
+        handle_key_event(self, key);
     }
 
     fn quit(&mut self) {
@@ -129,5 +111,25 @@ impl App {
         self.selected_index = 0;
 
         Ok(())
+    }
+
+    pub fn add_path(&mut self) -> Result<()> {
+        if let InputMode::Adding { buffer } = &mut self.input_mode {
+            let new_path = Path::new(&self.directory).join(buffer);
+
+            if new_path.extension().is_some() {
+                if let Some(parent) = new_path.parent() {
+                    fs::create_dir_all(parent)?;
+                }
+                fs::File::create(&new_path)?;
+            } else {
+                fs::create_dir_all(&new_path)?;
+            }
+
+            self.entries = read_directory(Path::new(&self.directory))?;
+            return Ok(());
+        }
+
+        Err(Error::IncorrentInputMode)
     }
 }

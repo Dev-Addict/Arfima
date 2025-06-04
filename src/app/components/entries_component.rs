@@ -7,9 +7,9 @@ use ratatui::{
 
 use crate::{directory_entry::DirectoryEntry, utils::hex_to_color};
 
-pub struct EnteriesComponent;
+pub struct EntriesComponent;
 
-impl EnteriesComponent {
+impl EntriesComponent {
     pub fn get(entries: &Vec<DirectoryEntry>) -> Table {
         let rows: Vec<Row> = entries
             .iter()

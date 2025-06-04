@@ -7,6 +7,7 @@ pub enum Error {
     InvalidDirectoryPath(String),
     Io(io::Error),
     DirectoryEntry(directory_entry::Error),
+    IncorrentInputMode,
 }
 
 impl Display for Error {
@@ -19,6 +20,7 @@ impl Display for Error {
             ),
             Self::Io(e) => write!(f, "IO error: {}", e),
             Self::DirectoryEntry(e) => write!(f, "DirectoryEntry error: {}", e),
+            Self::IncorrentInputMode => write!(f, "Incorrect input mode"),
         }
     }
 }
