@@ -126,6 +126,7 @@ impl App {
 
         self.entries = read_directory(path)?;
         self.directory = directory;
+        self.selected_index = 0;
 
         Ok(())
     }
