@@ -3,7 +3,7 @@ use std::{fs, path::Path};
 use super::{DirectoryEntry, DirectoryEntryType, Result};
 
 pub fn read_directory<P: AsRef<Path>>(path: P) -> Result<Vec<DirectoryEntry>> {
-    let entries = fs::read_dir(path)?
+    let mut entries = fs::read_dir(path)?
         .filter_map(|entry| {
             let entry = entry.ok()?;
             let path = entry.path();
@@ -49,6 +49,8 @@ pub fn read_directory<P: AsRef<Path>>(path: P) -> Result<Vec<DirectoryEntry>> {
             }
         })
         .collect::<Vec<_>>();
+
+    entries.sort();
 
     Ok(entries)
 }

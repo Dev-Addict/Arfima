@@ -13,7 +13,7 @@ pub use read_directory::read_directory;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct DirectoryEntry {
     name: String,
     path: PathBuf,
@@ -96,5 +96,29 @@ impl DirectoryEntry {
             let datetime: DateTime<Local> = modified.into();
             datetime.format("%Y-%m-%d %H:%M:%S").to_string()
         })
+    }
+}
+
+impl PartialOrd for DirectoryEntry {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for DirectoryEntry {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        if self.entry_type == DirectoryEntryType::Directory {
+            if other.entry_type == DirectoryEntryType::Directory {
+                return self.name.cmp(&other.name);
+            }
+
+            return std::cmp::Ordering::Less;
+        }
+
+        if other.entry_type == DirectoryEntryType::Directory {
+            return std::cmp::Ordering::Greater;
+        }
+
+        self.name.cmp(&other.name)
     }
 }
