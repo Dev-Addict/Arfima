@@ -11,7 +11,7 @@ pub use directory_entry_type::DirectoryEntryType;
 pub use error::Error;
 pub use read_directory::read_directory;
 
-use crate::icons::get_icon;
+use crate::utils::get_icon;
 
 pub type Result<T> = std::result::Result<T, Error>;
 

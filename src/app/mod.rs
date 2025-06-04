@@ -1,19 +1,22 @@
+mod entries_component;
 mod error;
+mod instructions_component;
+mod title_component;
 
-use std::{path::Path, process::Command};
+use std::path::Path;
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
+use entries_component::EnteriesComponent;
+use instructions_component::InstructionsComponent;
 use ratatui::{
     DefaultTerminal, Frame,
-    layout::Constraint,
-    style::{Color, Style, Stylize},
-    text::{Line, Span},
-    widgets::{Block, Cell, Row, Table, TableState},
+    widgets::{Block, TableState},
 };
+use title_component::TitleComponent;
 
 use crate::{
     directory_entry::{DirectoryEntry, DirectoryEntryType, read_directory},
-    hex_to_color::hex_to_color,
+    utils::open_file,
 };
 use error::Error;
 
@@ -53,84 +56,11 @@ impl App {
     }
 
     fn render(&mut self, frame: &mut Frame) {
-        let mut title_items: Vec<Span> = vec![
-            Span::styled("", Style::default()),
-            Span::styled(" root ", Style::default().reversed()),
-            Span::styled("╱", Style::default().reversed().bg(Color::Reset)),
-        ];
-
-        for directory in self.directory[1..].split("/") {
-            title_items.push(Span::styled(
-                format!(" {} ", directory),
-                Style::default().reversed(),
-            ));
-            title_items.push(Span::styled(
-                "╱",
-                Style::default().reversed().bg(Color::Reset),
-            ));
-        }
-
-        title_items.pop();
-        title_items.push(Span::styled("", Style::default()));
-
-        let title = Line::from(title_items).bold();
-
-        let instructions = Line::from(vec![
-            " Up ".into(),
-            "<K>".blue().bold(),
-            " Down ".into(),
-            "<J>".blue().bold(),
-            " Back ".into(),
-            "<H>".blue().bold(),
-            " Down ".into(),
-            "<J>".blue().bold(),
-            " Quit ".into(),
-            "<Q> ".blue().bold(),
-        ]);
-
         let block = Block::bordered()
-            .title(title.centered())
-            .title_bottom(instructions.left_aligned());
+            .title(TitleComponent::get(&self.directory))
+            .title_bottom(InstructionsComponent::get());
 
-        let rows: Vec<Row> = self
-            .entries
-            .iter()
-            .map(|entry| {
-                let (icon, color) = entry.icon();
-
-                let icon = match color {
-                    Some(color) => match hex_to_color(color) {
-                        Some(color) => {
-                            Span::styled(format!("{} ", icon), Style::default().fg(color))
-                        }
-                        None => Span::raw(icon),
-                    },
-                    None => Span::raw(icon),
-                };
-
-                Row::new(vec![
-                    Cell::from(icon),
-                    Cell::from(entry.name()),
-                    Cell::from(entry.formatted_size().unwrap_or_default()),
-                    Cell::from(entry.formatted_modified().unwrap_or_default()),
-                ])
-            })
-            .collect();
-
-        let widths = [
-            Constraint::Length(2),
-            Constraint::Fill(1),
-            Constraint::Min(6),
-            Constraint::Min(10),
-        ];
-
-        let table = Table::new(rows, widths)
-            .header(
-                Row::new(vec!["", "Name", "Size", "Modified"])
-                    .style(Style::default().fg(Color::Cyan).bold()),
-            )
-            .block(block)
-            .row_highlight_style(Style::default().reversed().bold());
+        let table = EnteriesComponent::get(&self.entries).block(block);
 
         let mut state = TableState::default();
         state.select(Some(self.selected_index));
@@ -174,26 +104,7 @@ impl App {
                             let _ = self.set_directory(entry.path().to_string_lossy().to_string());
                         }
                         _ => {
-                            #[cfg(target_os = "macos")]
-                            let mut cmd = Command::new("open");
-
-                            #[cfg(target_os = "linux")]
-                            let mut cmd = Command::new("xdg-open");
-
-                            #[cfg(target_os = "windows")]
-                            let mut cmd = Command::new("cmd");
-
-                            #[cfg(target_os = "windows")]
-                            {
-                                cmd.args(["/C", "start", "", path]);
-                            }
-
-                            #[cfg(not(target_os = "windows"))]
-                            {
-                                cmd.arg(entry.path());
-                            }
-
-                            let _ = cmd.status();
+                            let _ = open_file(entry.path());
                         }
                     }
                 }
