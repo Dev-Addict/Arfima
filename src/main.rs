@@ -1,4 +1,7 @@
+#![allow(dead_code)]
+
 mod app;
+mod directory_entry;
 
 use std::{env, path::PathBuf};
 
@@ -25,9 +28,9 @@ fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
 
     let terminal = ratatui::init();
-    let result = App::new(directory.to_string_lossy().to_string()).run(terminal);
+    let result = App::new(directory.to_string_lossy().to_string())?.run(terminal);
 
     ratatui::restore();
 
-    result
+    Ok(result?)
 }
