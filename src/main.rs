@@ -2,6 +2,8 @@
 
 mod app;
 mod directory_entry;
+mod hex_to_color;
+mod icons;
 
 use std::{env, path::PathBuf};
 

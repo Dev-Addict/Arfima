@@ -11,6 +11,8 @@ pub use directory_entry_type::DirectoryEntryType;
 pub use error::Error;
 pub use read_directory::read_directory;
 
+use crate::icons::get_icon;
+
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -58,14 +60,17 @@ impl DirectoryEntry {
         self.entry_type = entry_type;
     }
 
-    pub fn icon(&self) -> &str {
+    pub fn icon(&self) -> (&str, Option<&str>) {
         match &self.entry_type {
-            DirectoryEntryType::Directory => "📁",
-            DirectoryEntryType::File {
-                extension: _,
-                size: _,
-            } => "📄",
-            DirectoryEntryType::Other => "",
+            DirectoryEntryType::Directory => ("📁", None),
+            DirectoryEntryType::File { extension, size: _ } => match &extension {
+                Some(extension) => match get_icon(&extension) {
+                    Some((icon, color)) => (icon, Some(color)),
+                    None => ("📄", None),
+                },
+                None => ("📄", None),
+            },
+            DirectoryEntryType::Other => ("", None),
         }
     }
 

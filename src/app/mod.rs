@@ -1,17 +1,20 @@
 mod error;
 
-use std::path::Path;
+use std::{path::Path, process::Command};
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::{
     DefaultTerminal, Frame,
     layout::Constraint,
     style::{Color, Style, Stylize},
-    text::Line,
+    text::{Line, Span},
     widgets::{Block, Cell, Row, Table, TableState},
 };
 
-use crate::directory_entry::{DirectoryEntry, read_directory};
+use crate::{
+    directory_entry::{DirectoryEntry, DirectoryEntryType, read_directory},
+    hex_to_color::hex_to_color,
+};
 use error::Error;
 
 #[derive(Debug, Default)]
@@ -57,6 +60,10 @@ impl App {
             "<K>".blue().bold(),
             " Down ".into(),
             "<J>".blue().bold(),
+            " Back ".into(),
+            "<H>".blue().bold(),
+            " Down ".into(),
+            "<J>".blue().bold(),
             " Quit ".into(),
             "<Q> ".blue().bold(),
         ]);
@@ -69,8 +76,20 @@ impl App {
             .entries
             .iter()
             .map(|entry| {
+                let (icon, color) = entry.icon();
+
+                let icon = match color {
+                    Some(color) => match hex_to_color(color) {
+                        Some(color) => {
+                            Span::styled(format!("{} ", icon), Style::default().fg(color))
+                        }
+                        None => Span::raw(icon),
+                    },
+                    None => Span::raw(icon),
+                };
+
                 Row::new(vec![
-                    Cell::from(entry.icon()),
+                    Cell::from(icon),
                     Cell::from(entry.name()),
                     Cell::from(entry.formatted_size().unwrap_or_default()),
                     Cell::from(entry.formatted_modified().unwrap_or_default()),
@@ -123,11 +142,60 @@ impl App {
                     self.selected_index -= 1;
                 }
             }
+            (_, KeyCode::Left | KeyCode::Char('h') | KeyCode::Backspace) => {
+                if let Some(parent) = Path::new(&self.directory).parent() {
+                    let _ = self.set_directory(parent.to_string_lossy().to_string());
+                }
+            }
+            (_, KeyCode::Right | KeyCode::Char('l') | KeyCode::Enter) => {
+                if let Some(entry) = self.entries.get(self.selected_index) {
+                    match entry.entry_type() {
+                        DirectoryEntryType::Directory => {
+                            let _ = self.set_directory(entry.path().to_string_lossy().to_string());
+                        }
+                        _ => {
+                            #[cfg(target_os = "macos")]
+                            let mut cmd = Command::new("open");
+
+                            #[cfg(target_os = "linux")]
+                            let mut cmd = Command::new("xdg-open");
+
+                            #[cfg(target_os = "windows")]
+                            let mut cmd = Command::new("cmd");
+
+                            #[cfg(target_os = "windows")]
+                            {
+                                cmd.args(["/C", "start", "", path]);
+                            }
+
+                            #[cfg(not(target_os = "windows"))]
+                            {
+                                cmd.arg(entry.path());
+                            }
+
+                            let _ = cmd.status();
+                        }
+                    }
+                }
+            }
             _ => {}
         }
     }
 
     fn quit(&mut self) {
         self.running = false;
+    }
+
+    fn set_directory(&mut self, directory: String) -> Result<()> {
+        let path = Path::new(&directory);
+
+        if !path.is_dir() {
+            return Err(Error::InvalidDirectoryPath(directory));
+        }
+
+        self.entries = read_directory(path)?;
+        self.directory = directory;
+
+        Ok(())
     }
 }
