@@ -5,9 +5,10 @@ use std::path::Path;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::{
     DefaultTerminal, Frame,
-    style::Stylize,
+    layout::Constraint,
+    style::{Color, Style, Stylize},
     text::Line,
-    widgets::{Block, List},
+    widgets::{Block, Cell, Row, Table, TableState},
 };
 
 use crate::directory_entry::{DirectoryEntry, read_directory};
@@ -18,6 +19,7 @@ pub struct App {
     running: bool,
     directory: String,
     entries: Vec<DirectoryEntry>,
+    selected_index: usize,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -34,6 +36,7 @@ impl App {
             running: false,
             entries: read_directory(path)?,
             directory,
+            selected_index: 0,
         })
     }
 
@@ -58,20 +61,42 @@ impl App {
             "<Q> ".blue().bold(),
         ]);
 
-        let block = Block::default()
+        let block = Block::bordered()
             .title(title.centered())
             .title_bottom(instructions.left_aligned());
 
-        frame.render_widget(
-            List::new(
-                self.entries
-                    .iter()
-                    .map(|entry| entry.name().to_string())
-                    .collect::<Vec<_>>(),
+        let rows: Vec<Row> = self
+            .entries
+            .iter()
+            .map(|entry| {
+                Row::new(vec![
+                    Cell::from(entry.icon()),
+                    Cell::from(entry.name()),
+                    Cell::from(entry.formatted_size().unwrap_or_default()),
+                    Cell::from(entry.formatted_modified().unwrap_or_default()),
+                ])
+            })
+            .collect();
+
+        let widths = [
+            Constraint::Length(2),
+            Constraint::Fill(1),
+            Constraint::Min(6),
+            Constraint::Min(10),
+        ];
+
+        let table = Table::new(rows, widths)
+            .header(
+                Row::new(vec!["", "Name", "Size", "Modified"])
+                    .style(Style::default().fg(Color::Cyan).bold()),
             )
-            .block(block),
-            frame.area(),
-        );
+            .block(block)
+            .row_highlight_style(Style::default().reversed().bold());
+
+        let mut state = TableState::default();
+        state.select(Some(self.selected_index));
+
+        frame.render_stateful_widget(table, frame.area(), &mut state);
     }
 
     fn handle_crossterm_events(&mut self) -> Result<()> {
@@ -88,6 +113,16 @@ impl App {
         match (key.modifiers, key.code) {
             (_, KeyCode::Esc | KeyCode::Char('q'))
             | (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => self.quit(),
+            (_, KeyCode::Down | KeyCode::Char('j')) => {
+                if self.selected_index + 1 < self.entries.len() {
+                    self.selected_index += 1;
+                }
+            }
+            (_, KeyCode::Up | KeyCode::Char('k')) => {
+                if self.selected_index > 0 {
+                    self.selected_index -= 1;
+                }
+            }
             _ => {}
         }
     }

@@ -5,6 +5,7 @@ mod read_directory;
 
 use std::{path::PathBuf, time::SystemTime};
 
+use chrono::{DateTime, Local};
 pub use directory_entry_builder::DirectoryEntryBuilder;
 pub use directory_entry_type::DirectoryEntryType;
 pub use error::Error;
@@ -55,5 +56,45 @@ impl DirectoryEntry {
 
     pub fn set_entry_type(&mut self, entry_type: DirectoryEntryType) {
         self.entry_type = entry_type;
+    }
+
+    pub fn icon(&self) -> &str {
+        match &self.entry_type {
+            DirectoryEntryType::Directory => "📁",
+            DirectoryEntryType::File {
+                extension: _,
+                size: _,
+            } => "📄",
+            DirectoryEntryType::Other => "",
+        }
+    }
+
+    pub fn formatted_size(&self) -> Option<String> {
+        match &self.entry_type {
+            DirectoryEntryType::File { extension: _, size } => {
+                const UNITS: [&str; 5] = ["B", "kB", "MB", "GB", "TB"];
+                let mut size = *size as f64;
+                let mut unit = 0;
+
+                while size >= 1024.0 && unit < UNITS.len() - 1 {
+                    size /= 1024.0;
+                    unit += 1;
+                }
+
+                if unit == 0 {
+                    Some(format!("{} {}", size as usize, UNITS[unit]))
+                } else {
+                    Some(format!("{:.2} {}", size, UNITS[unit]))
+                }
+            }
+            _ => None,
+        }
+    }
+
+    pub fn formatted_modified(&self) -> Option<String> {
+        self.modified.map(|modified| {
+            let datetime: DateTime<Local> = modified.into();
+            datetime.format("%Y-%m-%d %H:%M:%S").to_string()
+        })
     }
 }
