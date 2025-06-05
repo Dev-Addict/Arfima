@@ -8,6 +8,7 @@ pub enum Error {
     Io(io::Error),
     DirectoryEntry(directory_entry::Error),
     IncorrentInputMode,
+    RenameBufferTypeMismatch,
 }
 
 impl Display for Error {
@@ -21,6 +22,7 @@ impl Display for Error {
             Self::Io(e) => write!(f, "IO error: {}", e),
             Self::DirectoryEntry(e) => write!(f, "DirectoryEntry error: {}", e),
             Self::IncorrentInputMode => write!(f, "Incorrect input mode"),
+            Self::RenameBufferTypeMismatch => write!(f, "Rename buffer type mismatch"),
         }
     }
 }

@@ -7,17 +7,17 @@ mod show_modal;
 use std::{fs, path::Path};
 
 use crossterm::event::{self, Event, KeyEvent, KeyEventKind};
-use key_event_handler::handle_key_event;
 use ratatui::{
     DefaultTerminal, Frame,
     widgets::{Block, TableState},
 };
-use show_modal::show_modal;
 
 use crate::directory_entry::{DirectoryEntry, read_directory};
 use centered_rect::centered_rect;
 use components::{EntriesComponent, InstructionsComponent, TitleComponent};
 use error::Error;
+use key_event_handler::handle_key_event;
+use show_modal::show_modal;
 
 #[derive(Debug)]
 pub enum InputMode<'a> {
@@ -76,6 +76,16 @@ impl App<'_> {
 
         frame.render_stateful_widget(table, frame.area(), &mut state);
 
+        match &self.input_mode {
+            InputMode::Adding { buffer } => {
+                show_modal("Add directory/file", frame, buffer);
+            }
+            InputMode::Renaming { buffer, .. } => {
+                show_modal("Rename directory/file", frame, buffer);
+            }
+            _ => {}
+        }
+
         if let InputMode::Adding { buffer } = &self.input_mode {
             show_modal("Add directory/file", frame, buffer);
         }
@@ -125,6 +135,28 @@ impl App<'_> {
             } else {
                 fs::create_dir_all(&new_path)?;
             }
+
+            self.entries = read_directory(Path::new(&self.directory))?;
+            return Ok(());
+        }
+
+        Err(Error::IncorrentInputMode)
+    }
+
+    pub fn rename_path(&mut self) -> Result<()> {
+        if let InputMode::Renaming { original, buffer } = &mut self.input_mode {
+            let new_path = Path::new(&self.directory).join(buffer);
+            let original_path = Path::new(&self.directory).join(original);
+
+            if new_path.is_dir() != original_path.is_dir() {
+                return Err(Error::RenameBufferTypeMismatch);
+            }
+
+            if let Some(parent) = new_path.parent() {
+                fs::create_dir_all(parent)?;
+            }
+
+            fs::rename(original_path, new_path)?;
 
             self.entries = read_directory(Path::new(&self.directory))?;
             return Ok(());

@@ -41,6 +41,14 @@ pub fn handle_key_event(app: &mut App, key: KeyEvent) {
             (_, KeyCode::Char('a')) => {
                 app.input_mode = InputMode::Adding { buffer: "".into() };
             }
+            (_, KeyCode::Char('r')) => {
+                if let Some(entry) = app.entries.get(app.selected_index) {
+                    app.input_mode = InputMode::Renaming {
+                        original: entry.name().into(),
+                        buffer: entry.name().into(),
+                    };
+                }
+            }
             _ => {}
         },
         InputMode::Adding { buffer } => match (key.modifiers, key.code) {
@@ -55,8 +63,27 @@ pub fn handle_key_event(app: &mut App, key: KeyEvent) {
                 buffer.pop();
             }
             (_, KeyCode::Enter) => {
-                let _ = app.add_path();
+                if app.add_path().is_ok() {
+                    app.input_mode = InputMode::Normal;
+                }
+            }
+            _ => {}
+        },
+        InputMode::Renaming { buffer, .. } => match (key.modifiers, key.code) {
+            (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => app.quit(),
+            (_, KeyCode::Esc) => {
                 app.input_mode = InputMode::Normal;
+            }
+            (_, KeyCode::Char(c)) => {
+                buffer.push(c);
+            }
+            (_, KeyCode::Backspace) => {
+                buffer.pop();
+            }
+            (_, KeyCode::Enter) => {
+                if app.rename_path().is_ok() {
+                    app.input_mode = InputMode::Normal;
+                }
             }
             _ => {}
         },
