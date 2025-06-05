@@ -6,7 +6,7 @@ use ratatui::{
     widgets::{Block, Borders, Clear, Paragraph},
 };
 
-use crate::utils::all_but_first;
+use crate::utils::{all_but_first, first_char_str};
 
 use super::{InputState, centered_rect};
 
@@ -23,13 +23,17 @@ pub fn show_input_modal(title: &str, frame: &mut Frame, state: &InputState) {
     let (left, right) = state.buffer.split_at(cursor_position);
 
     spans.push(Span::raw(left));
-    spans.push(Span::styled(
-        "█",
-        Style::default().fg(Color::White).bg(Color::Black).bold(),
-    ));
     if cursor_position == state.buffer.len() {
+        spans.push(Span::styled(
+            "█",
+            Style::default().fg(Color::White).bg(Color::Black).bold(),
+        ));
         spans.push(Span::raw(right));
     } else {
+        spans.push(Span::styled(
+            first_char_str(right).unwrap_or("█"),
+            Style::default().fg(Color::DarkGray).bg(Color::White).bold(),
+        ));
         spans.push(Span::raw(all_but_first(right)));
     }
 
