@@ -159,10 +159,6 @@ impl App {
             let new_path = Path::new(&self.directory).join(&state.buffer);
             let original_path = Path::new(&self.directory).join(original);
 
-            if new_path.is_dir() != original_path.is_dir() {
-                return Err(Error::RenameBufferTypeMismatch);
-            }
-
             if let Some(parent) = new_path.parent() {
                 fs::create_dir_all(parent)?;
             }
