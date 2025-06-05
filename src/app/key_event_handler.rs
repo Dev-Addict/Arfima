@@ -64,6 +64,10 @@ pub fn handle_key_event(app: &mut App, key: KeyEvent) {
                     };
                 }
             }
+            (_, KeyCode::Home | KeyCode::Char('g')) => app.selected_index = 0,
+            (_, KeyCode::End | KeyCode::Char('G')) => {
+                app.selected_index = app.entries.len().saturating_sub(1)
+            }
             _ => {}
         },
         InputMode::Adding { state } => match (key.modifiers, key.code) {
