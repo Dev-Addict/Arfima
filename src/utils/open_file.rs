@@ -1,10 +1,10 @@
 use std::{
     io,
     path::Path,
-    process::{Command, ExitStatus},
+    process::{Command, Stdio},
 };
 
-pub fn open_file(path: &Path) -> io::Result<ExitStatus> {
+pub fn open_file(path: &Path) -> io::Result<()> {
     #[cfg(target_os = "macos")]
     let mut cmd = Command::new("open");
 
@@ -24,5 +24,10 @@ pub fn open_file(path: &Path) -> io::Result<ExitStatus> {
         cmd.arg(path);
     }
 
-    cmd.status()
+    cmd.stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .stdin(Stdio::null())
+        .spawn()?;
+
+    Ok(())
 }
