@@ -85,6 +85,8 @@ pub fn handle_key_event(app: &mut App, key: KeyEvent) {
             (_, KeyCode::Right) => {
                 state.cursor_position = (state.cursor_position + 1).min(state.buffer.len());
             }
+            (_, KeyCode::Home) => state.cursor_position = 0,
+            (_, KeyCode::End) => state.cursor_position = state.buffer.len(),
             (_, KeyCode::Enter) => {
                 if app.add_path().is_ok() {
                     app.input_mode = InputMode::Normal;
@@ -111,6 +113,8 @@ pub fn handle_key_event(app: &mut App, key: KeyEvent) {
             (_, KeyCode::Right) => {
                 state.cursor_position = (state.cursor_position + 1).min(state.buffer.len());
             }
+            (_, KeyCode::Home) => state.cursor_position = 0,
+            (_, KeyCode::End) => state.cursor_position = state.buffer.len(),
             (_, KeyCode::Enter) => {
                 if app.rename_path().is_ok() {
                     app.input_mode = InputMode::Normal;
