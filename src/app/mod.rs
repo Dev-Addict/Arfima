@@ -20,10 +20,16 @@ use key_event_handler::handle_key_event;
 use show_modal::{show_input_modal, show_yes_no_modal};
 
 #[derive(Debug)]
+pub struct InputState {
+    buffer: String,
+    cursor_position: usize,
+}
+
+#[derive(Debug)]
 pub enum InputMode {
     Normal,
-    Adding { buffer: String },
-    Renaming { original: String, buffer: String },
+    Adding { state: InputState },
+    Renaming { original: String, state: InputState },
     Removing { path: String },
 }
 
@@ -79,11 +85,11 @@ impl App {
         frame.render_stateful_widget(table, frame.area(), &mut state);
 
         match &self.input_mode {
-            InputMode::Adding { buffer } => {
-                show_input_modal("Add directory/file", frame, buffer);
+            InputMode::Adding { state } => {
+                show_input_modal("Add directory/file", frame, state);
             }
-            InputMode::Renaming { buffer, .. } => {
-                show_input_modal("Rename directory/file", frame, buffer);
+            InputMode::Renaming { state, .. } => {
+                show_input_modal("Rename directory/file", frame, state);
             }
             InputMode::Removing { .. } => {
                 show_yes_no_modal(
@@ -93,10 +99,6 @@ impl App {
                 );
             }
             _ => {}
-        }
-
-        if let InputMode::Adding { buffer } = &self.input_mode {
-            show_input_modal("Add directory/file", frame, buffer);
         }
     }
 
@@ -133,8 +135,8 @@ impl App {
     }
 
     pub fn add_path(&mut self) -> Result<()> {
-        if let InputMode::Adding { buffer } = &mut self.input_mode {
-            let new_path = Path::new(&self.directory).join(buffer);
+        if let InputMode::Adding { state } = &mut self.input_mode {
+            let new_path = Path::new(&self.directory).join(&state.buffer);
 
             if new_path.extension().is_some() {
                 if let Some(parent) = new_path.parent() {
@@ -153,8 +155,8 @@ impl App {
     }
 
     pub fn rename_path(&mut self) -> Result<()> {
-        if let InputMode::Renaming { original, buffer } = &mut self.input_mode {
-            let new_path = Path::new(&self.directory).join(buffer);
+        if let InputMode::Renaming { original, state } = &mut self.input_mode {
+            let new_path = Path::new(&self.directory).join(&state.buffer);
             let original_path = Path::new(&self.directory).join(original);
 
             if new_path.is_dir() != original_path.is_dir() {

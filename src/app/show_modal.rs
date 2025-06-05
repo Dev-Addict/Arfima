@@ -6,16 +6,34 @@ use ratatui::{
     widgets::{Block, Borders, Clear, Paragraph},
 };
 
-use super::centered_rect;
+use crate::utils::all_but_first;
 
-pub fn show_input_modal(title: &str, frame: &mut Frame, buffer: &str) {
+use super::{InputState, centered_rect};
+
+pub fn show_input_modal(title: &str, frame: &mut Frame, state: &InputState) {
     let area = centered_rect(50, 3, frame.area());
     let block = Block::default()
         .title(title)
         .borders(Borders::ALL)
         .style(Style::default().fg(Color::Yellow).bg(Color::Black));
 
-    let input = Paragraph::new(buffer)
+    let mut spans = Vec::new();
+
+    let cursor_position = state.cursor_position.min(state.buffer.len());
+    let (left, right) = state.buffer.split_at(cursor_position);
+
+    spans.push(Span::raw(left));
+    spans.push(Span::styled(
+        "█",
+        Style::default().fg(Color::White).bg(Color::Black).bold(),
+    ));
+    if cursor_position == state.buffer.len() {
+        spans.push(Span::raw(right));
+    } else {
+        spans.push(Span::raw(all_but_first(right)));
+    }
+
+    let input = Paragraph::new(Line::from(spans))
         .block(block)
         .style(Style::default().fg(Color::White))
         .alignment(Alignment::Left);

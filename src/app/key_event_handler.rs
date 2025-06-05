@@ -4,7 +4,7 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{directory_entry::DirectoryEntryType, utils::open_file};
 
-use super::{App, InputMode};
+use super::{App, InputMode, InputState};
 
 pub fn handle_key_event(app: &mut App, key: KeyEvent) {
     match &mut app.input_mode {
@@ -39,13 +39,21 @@ pub fn handle_key_event(app: &mut App, key: KeyEvent) {
                 }
             }
             (_, KeyCode::Char('a')) => {
-                app.input_mode = InputMode::Adding { buffer: "".into() };
+                app.input_mode = InputMode::Adding {
+                    state: InputState {
+                        buffer: "".into(),
+                        cursor_position: 0,
+                    },
+                };
             }
             (_, KeyCode::Char('r')) => {
                 if let Some(entry) = app.entries.get(app.selected_index) {
                     app.input_mode = InputMode::Renaming {
                         original: entry.name().into(),
-                        buffer: entry.name().into(),
+                        state: InputState {
+                            buffer: entry.name().into(),
+                            cursor_position: entry.name().len(),
+                        },
                     };
                 }
             }
@@ -58,16 +66,24 @@ pub fn handle_key_event(app: &mut App, key: KeyEvent) {
             }
             _ => {}
         },
-        InputMode::Adding { buffer } => match (key.modifiers, key.code) {
+        InputMode::Adding { state } => match (key.modifiers, key.code) {
             (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => app.quit(),
             (_, KeyCode::Esc) => {
                 app.input_mode = InputMode::Normal;
             }
             (_, KeyCode::Char(c)) => {
-                buffer.push(c);
+                state.buffer.insert(state.cursor_position, c);
+                state.cursor_position += 1;
             }
             (_, KeyCode::Backspace) => {
-                buffer.pop();
+                if state.cursor_position > 0 {
+                    state.buffer.remove(state.cursor_position - 1);
+                    state.cursor_position -= 1;
+                }
+            }
+            (_, KeyCode::Left) => state.cursor_position = state.cursor_position.saturating_sub(1),
+            (_, KeyCode::Right) => {
+                state.cursor_position = (state.cursor_position + 1).min(state.buffer.len());
             }
             (_, KeyCode::Enter) => {
                 if app.add_path().is_ok() {
@@ -76,16 +92,24 @@ pub fn handle_key_event(app: &mut App, key: KeyEvent) {
             }
             _ => {}
         },
-        InputMode::Renaming { buffer, .. } => match (key.modifiers, key.code) {
+        InputMode::Renaming { state, .. } => match (key.modifiers, key.code) {
             (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => app.quit(),
             (_, KeyCode::Esc) => {
                 app.input_mode = InputMode::Normal;
             }
             (_, KeyCode::Char(c)) => {
-                buffer.push(c);
+                state.buffer.insert(state.cursor_position, c);
+                state.cursor_position += 1;
             }
             (_, KeyCode::Backspace) => {
-                buffer.pop();
+                if state.cursor_position > 0 {
+                    state.buffer.remove(state.cursor_position - 1);
+                    state.cursor_position -= 1;
+                }
+            }
+            (_, KeyCode::Left) => state.cursor_position = state.cursor_position.saturating_sub(1),
+            (_, KeyCode::Right) => {
+                state.cursor_position = (state.cursor_position + 1).min(state.buffer.len());
             }
             (_, KeyCode::Enter) => {
                 if app.rename_path().is_ok() {
