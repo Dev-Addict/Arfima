@@ -12,33 +12,34 @@ use ratatui::{
     widgets::{Block, TableState},
 };
 
-use crate::directory_entry::{DirectoryEntry, read_directory};
+use crate::directory_entry::{DirectoryEntry, DirectoryEntryType, read_directory};
 use centered_rect::centered_rect;
 use components::{EntriesComponent, InstructionsComponent, TitleComponent};
 use error::Error;
 use key_event_handler::handle_key_event;
-use show_modal::show_modal;
+use show_modal::{show_input_modal, show_yes_no_modal};
 
 #[derive(Debug)]
-pub enum InputMode<'a> {
+pub enum InputMode {
     Normal,
     Adding { buffer: String },
     Renaming { original: String, buffer: String },
-    Removing { path: &'a Path },
+    Removing { path: String },
 }
 
 #[derive(Debug)]
-pub struct App<'a> {
+pub struct App {
     running: bool,
     directory: String,
     entries: Vec<DirectoryEntry>,
     selected_index: usize,
-    input_mode: InputMode<'a>,
+    input_mode: InputMode,
+    removing_selected: bool,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-impl App<'_> {
+impl App {
     pub fn new(directory: String) -> Result<Self> {
         let path = Path::new(&directory);
 
@@ -52,6 +53,7 @@ impl App<'_> {
             directory,
             selected_index: 0,
             input_mode: InputMode::Normal,
+            removing_selected: false,
         })
     }
 
@@ -78,16 +80,23 @@ impl App<'_> {
 
         match &self.input_mode {
             InputMode::Adding { buffer } => {
-                show_modal("Add directory/file", frame, buffer);
+                show_input_modal("Add directory/file", frame, buffer);
             }
             InputMode::Renaming { buffer, .. } => {
-                show_modal("Rename directory/file", frame, buffer);
+                show_input_modal("Rename directory/file", frame, buffer);
+            }
+            InputMode::Removing { .. } => {
+                show_yes_no_modal(
+                    "Are you sure you want to delete directory/file?",
+                    frame,
+                    self.removing_selected,
+                );
             }
             _ => {}
         }
 
         if let InputMode::Adding { buffer } = &self.input_mode {
-            show_modal("Add directory/file", frame, buffer);
+            show_input_modal("Add directory/file", frame, buffer);
         }
     }
 
@@ -157,6 +166,22 @@ impl App<'_> {
             }
 
             fs::rename(original_path, new_path)?;
+
+            self.entries = read_directory(Path::new(&self.directory))?;
+            return Ok(());
+        }
+
+        Err(Error::IncorrentInputMode)
+    }
+
+    pub fn delete_path(&mut self) -> Result<()> {
+        if let InputMode::Removing { path } = &mut self.input_mode {
+            if let Some(entry) = self.entries.get(self.selected_index) {
+                match entry.entry_type() {
+                    DirectoryEntryType::Directory => fs::remove_dir_all(path)?,
+                    _ => fs::remove_file(path)?,
+                }
+            }
 
             self.entries = read_directory(Path::new(&self.directory))?;
             return Ok(());
