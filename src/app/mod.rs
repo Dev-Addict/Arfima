@@ -1,10 +1,11 @@
 mod centered_rect;
 mod components;
 mod error;
+mod help;
 mod key_event_handler;
 mod show_modal;
 
-use std::{fs, path::Path};
+use std::{fmt::Display, fs, path::Path};
 
 use crossterm::event::{self, Event, KeyEvent, KeyEventKind};
 use ratatui::{
@@ -13,11 +14,10 @@ use ratatui::{
 };
 
 use crate::directory_entry::{DirectoryEntry, DirectoryEntryType, read_directory};
-use centered_rect::centered_rect;
 use components::{EntriesComponent, InstructionsComponent, TitleComponent};
 use error::Error;
 use key_event_handler::handle_key_event;
-use show_modal::{show_input_modal, show_yes_no_modal};
+use show_modal::{show_help_modal, show_input_modal, show_yes_no_modal};
 
 #[derive(Debug)]
 pub struct InputState {
@@ -31,6 +31,19 @@ pub enum InputMode {
     Adding { state: InputState },
     Renaming { original: String, state: InputState },
     Removing { path: String },
+    Help { selected_index: usize },
+}
+
+impl Display for InputMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Normal => write!(f, "Normal"),
+            Self::Adding { .. } => write!(f, "Adding"),
+            Self::Renaming { .. } => write!(f, "Renaming"),
+            Self::Removing { .. } => write!(f, "Removing"),
+            Self::Help { .. } => write!(f, "Help"),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -97,6 +110,9 @@ impl App {
                     frame,
                     self.removing_selected,
                 );
+            }
+            InputMode::Help { selected_index } => {
+                show_help_modal(frame, *selected_index);
             }
             _ => {}
         }

@@ -4,7 +4,7 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{directory_entry::DirectoryEntryType, utils::open_file};
 
-use super::{App, InputMode, InputState};
+use super::{App, InputMode, InputState, help::get_help_enteries_len};
 
 pub fn handle_key_event(app: &mut App, key: KeyEvent) {
     match &mut app.input_mode {
@@ -20,6 +20,9 @@ pub fn handle_key_event(app: &mut App, key: KeyEvent) {
                 if app.selected_index > 0 {
                     app.selected_index -= 1;
                 }
+            }
+            (KeyModifiers::CONTROL, KeyCode::Char('h')) => {
+                app.input_mode = InputMode::Help { selected_index: 0 };
             }
             (_, KeyCode::Left | KeyCode::Char('h') | KeyCode::Backspace) => {
                 if let Some(parent) = Path::new(&app.directory).parent() {
@@ -150,6 +153,27 @@ pub fn handle_key_event(app: &mut App, key: KeyEvent) {
 
                 app.input_mode = InputMode::Normal;
                 app.removing_selected = false;
+            }
+            _ => {}
+        },
+        InputMode::Help { selected_index } => match (key.modifiers, key.code) {
+            (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => app.quit(),
+            (_, KeyCode::Esc | KeyCode::Char('q')) => {
+                app.input_mode = InputMode::Normal;
+            }
+            (_, KeyCode::Down | KeyCode::Char('j')) => {
+                if *selected_index + 1 < get_help_enteries_len() {
+                    *selected_index = selected_index.saturating_add(1);
+                }
+            }
+            (_, KeyCode::Up | KeyCode::Char('k')) => {
+                if *selected_index > 0 {
+                    *selected_index = selected_index.saturating_sub(1);
+                }
+            }
+            (_, KeyCode::Home | KeyCode::Char('g')) => *selected_index = 0,
+            (_, KeyCode::End | KeyCode::Char('G')) => {
+                *selected_index = get_help_enteries_len().saturating_sub(1)
             }
             _ => {}
         },

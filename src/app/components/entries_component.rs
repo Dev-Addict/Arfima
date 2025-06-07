@@ -10,7 +10,7 @@ use crate::{directory_entry::DirectoryEntry, utils::hex_to_color};
 pub struct EntriesComponent;
 
 impl EntriesComponent {
-    pub fn get(entries: &Vec<DirectoryEntry>) -> Table {
+    pub fn get(entries: &[DirectoryEntry]) -> Table {
         let rows: Vec<Row> = entries
             .iter()
             .map(|entry| {

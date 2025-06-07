@@ -3,12 +3,16 @@ use ratatui::{
     layout::Alignment,
     style::{Color, Style, Stylize},
     text::{Line, Span},
-    widgets::{Block, Borders, Clear, Paragraph},
+    widgets::{Block, Borders, Clear, Paragraph, TableState},
 };
 
 use crate::utils::{all_but_first, first_char_str};
 
-use super::{InputState, centered_rect};
+use super::{
+    InputState,
+    centered_rect::{centered_rect, centered_rect_by_percent},
+    components::HelpTableComponent,
+};
 
 pub fn show_input_modal(title: &str, frame: &mut Frame, state: &InputState) {
     let area = centered_rect(50, 3, frame.area());
@@ -79,4 +83,21 @@ pub fn show_yes_no_modal(title: &str, frame: &mut Frame, selected: bool) {
 
     frame.render_widget(Clear, area);
     frame.render_widget(paragraph, area);
+}
+
+pub fn show_help_modal(frame: &mut Frame, selected_index: usize) {
+    let area = centered_rect_by_percent(80, 70, frame.area());
+
+    let block = Block::default()
+        .title("Help")
+        .borders(Borders::ALL)
+        .style(Style::default().fg(Color::Yellow).bg(Color::Black));
+
+    let table = HelpTableComponent::get(area.width).block(block);
+
+    let mut state = TableState::default();
+    state.select(Some(selected_index));
+
+    frame.render_widget(Clear, area);
+    frame.render_stateful_widget(table, area, &mut state);
 }

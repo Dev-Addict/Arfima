@@ -13,6 +13,8 @@ impl InstructionsComponent {
             "<H>".blue().bold(),
             " Down ".into(),
             "<J>".blue().bold(),
+            " Help ".into(),
+            "<Ctrl+H>".blue().bold(),
             " Quit ".into(),
             "<Q> ".blue().bold(),
         ])
