@@ -1,7 +1,6 @@
 mod centered_rect;
 mod components;
 mod error;
-mod help;
 mod key_event_handler;
 mod show_modal;
 
@@ -23,6 +22,15 @@ use show_modal::{show_help_modal, show_input_modal, show_yes_no_modal};
 pub struct InputState {
     buffer: String,
     cursor_position: usize,
+}
+
+impl InputState {
+    pub fn new(buffer: &str, cursor_position: usize) -> Self {
+        Self {
+            buffer: buffer.into(),
+            cursor_position,
+        }
+    }
 }
 
 #[derive(Debug)]
