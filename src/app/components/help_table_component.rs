@@ -5,7 +5,7 @@ use ratatui::{
 };
 
 use crate::{
-    app::help::get_help,
+    data::help::get_help,
     utils::{format_keybindings, wrap_text},
 };
 
@@ -20,11 +20,11 @@ impl HelpTableComponent {
         let mut rows: Vec<Row> = Vec::new();
 
         for mode in help {
-            let (height, description) = wrap_text(mode.description, description_width);
+            let (height, description) = wrap_text(mode.description(), description_width);
 
             rows.push(
                 Row::new(vec![
-                    Cell::from(format!("{}", mode.mode))
+                    Cell::from(format!("{}", mode.mode()))
                         .style(Style::default().fg(Color::Green).bold()),
                     Cell::from(""),
                     Cell::from(description),
@@ -32,13 +32,13 @@ impl HelpTableComponent {
                 .height(height.try_into().unwrap_or(1)),
             );
 
-            for item in mode.items {
-                let (height, description) = wrap_text(item.description, description_width);
+            for item in mode.items() {
+                let (height, description) = wrap_text(item.description(), description_width);
 
                 rows.push(
                     Row::new(vec![
-                        Cell::from(item.name),
-                        Cell::from(format_keybindings(item.keys))
+                        Cell::from(item.name()),
+                        Cell::from(format_keybindings(item.keys()))
                             .style(Style::default().fg(Color::Blue).bold()),
                         Cell::from(description),
                     ])

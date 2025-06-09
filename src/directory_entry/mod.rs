@@ -9,9 +9,10 @@ use chrono::{DateTime, Local};
 pub use directory_entry_builder::DirectoryEntryBuilder;
 pub use directory_entry_type::DirectoryEntryType;
 pub use error::Error;
+use ratatui::style::Color;
 pub use read_directory::read_directory;
 
-use crate::utils::get_icon;
+use crate::utils::get_icon_and_color;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -60,17 +61,17 @@ impl DirectoryEntry {
         self.entry_type = entry_type;
     }
 
-    pub fn icon(&self) -> (&str, Option<&str>) {
+    pub fn icon(&self) -> (String, Option<Color>) {
         match &self.entry_type {
-            DirectoryEntryType::Directory => ("📁", None),
+            DirectoryEntryType::Directory => ("📁".into(), None),
             DirectoryEntryType::File { extension, size: _ } => match &extension {
-                Some(extension) => match get_icon(&extension) {
-                    Some((icon, color)) => (icon, Some(color)),
-                    None => ("📄", None),
+                Some(extension) => match get_icon_and_color(&extension.to_owned()) {
+                    Some((icon, color)) => (icon, color),
+                    None => ("📄".into(), None),
                 },
-                None => ("📄", None),
+                None => ("📄".into(), None),
             },
-            DirectoryEntryType::Other => ("", None),
+            DirectoryEntryType::Other => ("".into(), None),
         }
     }
 

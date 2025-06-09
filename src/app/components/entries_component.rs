@@ -5,7 +5,7 @@ use ratatui::{
     widgets::{Cell, Row, Table},
 };
 
-use crate::{directory_entry::DirectoryEntry, utils::hex_to_color};
+use crate::directory_entry::DirectoryEntry;
 
 pub struct EntriesComponent;
 
@@ -17,12 +17,7 @@ impl EntriesComponent {
                 let (icon, color) = entry.icon();
 
                 let icon = match color {
-                    Some(color) => match hex_to_color(color) {
-                        Some(color) => {
-                            Span::styled(format!("{} ", icon), Style::default().fg(color))
-                        }
-                        None => Span::raw(icon),
-                    },
+                    Some(color) => Span::styled(format!("{} ", icon), Style::default().fg(color)),
                     None => Span::raw(icon),
                 };
 
