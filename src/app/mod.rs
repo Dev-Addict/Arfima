@@ -1,6 +1,7 @@
 mod error;
 mod input;
 mod input_mode;
+mod precommand;
 mod result;
 mod ui;
 mod widgets;
@@ -8,11 +9,10 @@ mod widgets;
 use std::{fs, path::Path};
 
 use crossterm::event::{self, Event, KeyEvent, KeyEventKind};
-use ratatui::{DefaultTerminal, Frame};
-
 pub use error::Error;
 use input::handle_key_event;
 pub use input_mode::InputMode;
+use ratatui::{DefaultTerminal, Frame};
 pub use result::Result;
 use ui::render_ui;
 
@@ -42,10 +42,20 @@ impl App {
             entries: read_directory(path)?,
             directory,
             selected_index: 0,
-            input_mode: InputMode::Normal,
+            input_mode: InputMode::Normal { precommand: None },
             removing_selected: false,
             error: None,
         })
+    }
+
+    pub fn reset(&mut self) -> Result<()> {
+        self.running = true;
+        self.entries = read_directory(Path::new(&self.directory))?;
+        self.input_mode = InputMode::Normal { precommand: None };
+        self.removing_selected = false;
+        self.error = None;
+
+        Ok(())
     }
 
     pub fn run(mut self, mut terminal: DefaultTerminal) -> Result<()> {

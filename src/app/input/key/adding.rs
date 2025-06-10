@@ -7,7 +7,7 @@ pub fn handle(app: &mut App, key: KeyEvent) {
         match (key.modifiers, key.code) {
             (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => app.quit(),
             (_, KeyCode::Esc) => {
-                app.input_mode = InputMode::Normal;
+                app.input_mode = InputMode::Normal { precommand: None };
                 app.error = None;
             }
             (_, KeyCode::Char(c)) => state.insert_char(c),
@@ -18,7 +18,7 @@ pub fn handle(app: &mut App, key: KeyEvent) {
             (_, KeyCode::End) => state.set_cursor_position(state.buffer().len()),
             (_, KeyCode::Enter) => match app.add_path() {
                 Ok(_) => {
-                    app.input_mode = InputMode::Normal;
+                    app.input_mode = InputMode::Normal { precommand: None };
                     app.error = None;
                 }
                 Err(e) => app.error = Some(e),

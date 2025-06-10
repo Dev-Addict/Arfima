@@ -10,7 +10,7 @@ pub fn handle(app: &mut App, key: KeyEvent) {
         match (key.modifiers, key.code) {
             (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => app.quit(),
             (_, KeyCode::Esc | KeyCode::Char('q')) => {
-                app.input_mode = InputMode::Normal;
+                app.input_mode = InputMode::Normal { precommand: None };
             }
             (_, KeyCode::Down | KeyCode::Char('j')) => {
                 if *selected_index + 1 < get_help_entries_len() {

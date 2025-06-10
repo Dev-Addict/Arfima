@@ -1,24 +1,14 @@
 use std::fmt::Display;
 
-use super::widgets::types::InputState;
+use super::{precommand::Precommand, widgets::types::InputState};
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub enum InputMode {
-    #[default]
-    Normal,
-    Adding {
-        state: InputState,
-    },
-    Renaming {
-        original: String,
-        state: InputState,
-    },
-    Removing {
-        path: String,
-    },
-    Help {
-        selected_index: usize,
-    },
+    Normal { precommand: Option<Precommand> },
+    Adding { state: InputState },
+    Renaming { original: String, state: InputState },
+    Removing { path: String },
+    Help { selected_index: usize },
 }
 
 impl InputMode {
@@ -51,11 +41,17 @@ impl InputMode {
 impl Display for InputMode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Normal => write!(f, "Normal"),
+            Self::Normal { .. } => write!(f, "Normal"),
             Self::Adding { .. } => write!(f, "Adding"),
             Self::Renaming { .. } => write!(f, "Renaming"),
             Self::Removing { .. } => write!(f, "Removing"),
             Self::Help { .. } => write!(f, "Help"),
         }
+    }
+}
+
+impl Default for InputMode {
+    fn default() -> Self {
+        Self::Normal { precommand: None }
     }
 }

@@ -4,16 +4,20 @@ use crossterm::event::{KeyCode, KeyModifiers};
 
 use super::KeyBinding;
 
-pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 11]> = LazyLock::new(|| {
+pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 12]> = LazyLock::new(|| {
     [
         KeyBinding::new(
             "quit",
             &[
                 (KeyModifiers::NONE, KeyCode::Char('q')),
-                (KeyModifiers::NONE, KeyCode::Esc),
                 (KeyModifiers::CONTROL, KeyCode::Char('c')),
             ],
             "Quit the application",
+        ),
+        KeyBinding::new(
+            "reset",
+            &[(KeyModifiers::NONE, KeyCode::Esc)],
+            "Reset the normal mode",
         ),
         KeyBinding::new(
             "navigate down",
