@@ -9,37 +9,32 @@ use std::sync::LazyLock;
 
 pub use types::{KeyBinding, ModeKeyBindings};
 
-use crate::app::{InputMode, InputState};
+use crate::app::InputMode;
 
 static HELP: LazyLock<[ModeKeyBindings; 5]> = LazyLock::new(|| {
     [
         ModeKeyBindings::new(
-            InputMode::Normal,
+            InputMode::default(),
             "Normal mode: navigate and interact",
             &*normal_bindings::NORMAL_BINDINGS,
         ),
         ModeKeyBindings::new(
-            InputMode::Adding {
-                state: InputState::new("", 0),
-            },
+            InputMode::adding_default(),
             "Adding mode: type a new name",
             &*adding_bindings::ADDING_BINDINGS,
         ),
         ModeKeyBindings::new(
-            InputMode::Renaming {
-                original: "".into(),
-                state: InputState::new("", 0),
-            },
+            InputMode::renaming_default(),
             "Renaming mode: edit the file name",
             &*renaming_bindings::RENAMING_BINDINGS,
         ),
         ModeKeyBindings::new(
-            InputMode::Removing { path: "".into() },
+            InputMode::removing_default(),
             "Removing mode: confirm deletion",
             &*removing_bindings::REMOVING_BINDINGS,
         ),
         ModeKeyBindings::new(
-            InputMode::Help { selected_index: 0 },
+            InputMode::help_default(),
             "Help mode: read keybindings",
             &*help_bindings::HELP_BINDINGS,
         ),

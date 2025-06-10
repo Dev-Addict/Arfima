@@ -481,5 +481,5 @@ static ICONS: LazyLock<HashMap<&str, (&str, &str)>> = LazyLock::new(|| {
 });
 
 pub fn get_icons() -> &'static HashMap<&'static str, (&'static str, &'static str)> {
-    &*ICONS
+    &ICONS
 }

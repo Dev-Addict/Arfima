@@ -1,58 +1,22 @@
-mod centered_rect;
-mod components;
 mod error;
-mod key_event_handler;
-mod show_modal;
+mod input;
+mod input_mode;
+mod result;
+mod ui;
+mod widgets;
 
-use std::{fmt::Display, fs, path::Path};
+use std::{fs, path::Path};
 
 use crossterm::event::{self, Event, KeyEvent, KeyEventKind};
-use ratatui::{
-    DefaultTerminal, Frame,
-    widgets::{Block, TableState},
-};
+use ratatui::{DefaultTerminal, Frame};
+
+use error::Error;
+use input::handle_key_event;
+pub use input_mode::InputMode;
+pub use result::Result;
+use ui::render_ui;
 
 use crate::directory_entry::{DirectoryEntry, DirectoryEntryType, read_directory};
-use components::{EntriesComponent, InstructionsComponent, TitleComponent};
-use error::Error;
-use key_event_handler::handle_key_event;
-use show_modal::{show_help_modal, show_input_modal, show_yes_no_modal};
-
-#[derive(Debug)]
-pub struct InputState {
-    buffer: String,
-    cursor_position: usize,
-}
-
-impl InputState {
-    pub fn new(buffer: &str, cursor_position: usize) -> Self {
-        Self {
-            buffer: buffer.into(),
-            cursor_position,
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum InputMode {
-    Normal,
-    Adding { state: InputState },
-    Renaming { original: String, state: InputState },
-    Removing { path: String },
-    Help { selected_index: usize },
-}
-
-impl Display for InputMode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Normal => write!(f, "Normal"),
-            Self::Adding { .. } => write!(f, "Adding"),
-            Self::Renaming { .. } => write!(f, "Renaming"),
-            Self::Removing { .. } => write!(f, "Removing"),
-            Self::Help { .. } => write!(f, "Help"),
-        }
-    }
-}
 
 #[derive(Debug)]
 pub struct App {
@@ -63,8 +27,6 @@ pub struct App {
     input_mode: InputMode,
     removing_selected: bool,
 }
-
-pub type Result<T> = std::result::Result<T, Error>;
 
 impl App {
     pub fn new(directory: String) -> Result<Self> {
@@ -94,36 +56,7 @@ impl App {
     }
 
     fn render(&mut self, frame: &mut Frame) {
-        let block = Block::bordered()
-            .title(TitleComponent::get(&self.directory))
-            .title_bottom(InstructionsComponent::get());
-
-        let table = EntriesComponent::get(&self.entries).block(block);
-
-        let mut state = TableState::default();
-        state.select(Some(self.selected_index));
-
-        frame.render_stateful_widget(table, frame.area(), &mut state);
-
-        match &self.input_mode {
-            InputMode::Adding { state } => {
-                show_input_modal("Add directory/file", frame, state);
-            }
-            InputMode::Renaming { state, .. } => {
-                show_input_modal("Rename directory/file", frame, state);
-            }
-            InputMode::Removing { .. } => {
-                show_yes_no_modal(
-                    "Are you sure you want to delete directory/file?",
-                    frame,
-                    self.removing_selected,
-                );
-            }
-            InputMode::Help { selected_index } => {
-                show_help_modal(frame, *selected_index);
-            }
-            _ => {}
-        }
+        render_ui(self, frame);
     }
 
     fn handle_crossterm_events(&mut self) -> Result<()> {
@@ -160,7 +93,7 @@ impl App {
 
     pub fn add_path(&mut self) -> Result<()> {
         if let InputMode::Adding { state } = &mut self.input_mode {
-            let new_path = Path::new(&self.directory).join(&state.buffer);
+            let new_path = Path::new(&self.directory).join(state.buffer());
 
             if new_path.extension().is_some() {
                 if let Some(parent) = new_path.parent() {
@@ -180,7 +113,7 @@ impl App {
 
     pub fn rename_path(&mut self) -> Result<()> {
         if let InputMode::Renaming { original, state } = &mut self.input_mode {
-            let new_path = Path::new(&self.directory).join(&state.buffer);
+            let new_path = Path::new(&self.directory).join(state.buffer());
             let original_path = Path::new(&self.directory).join(original);
 
             if let Some(parent) = new_path.parent() {
