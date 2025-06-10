@@ -10,7 +10,7 @@ use std::{fs, path::Path};
 use crossterm::event::{self, Event, KeyEvent, KeyEventKind};
 use ratatui::{DefaultTerminal, Frame};
 
-use error::Error;
+pub use error::Error;
 use input::handle_key_event;
 pub use input_mode::InputMode;
 pub use result::Result;
@@ -26,6 +26,7 @@ pub struct App {
     selected_index: usize,
     input_mode: InputMode,
     removing_selected: bool,
+    error: Option<Error>,
 }
 
 impl App {
@@ -43,6 +44,7 @@ impl App {
             selected_index: 0,
             input_mode: InputMode::Normal,
             removing_selected: false,
+            error: None,
         })
     }
 

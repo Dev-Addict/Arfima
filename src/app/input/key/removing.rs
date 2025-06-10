@@ -8,11 +8,13 @@ pub fn handle(app: &mut App, key: KeyEvent) {
         (_, KeyCode::Esc | KeyCode::Char('n') | KeyCode::Char('N')) => {
             app.input_mode = InputMode::Normal;
             app.removing_selected = false;
+            app.error = None;
         }
         (_, KeyCode::Char('y') | KeyCode::Char('Y')) => {
             let _ = app.delete_path();
             app.input_mode = InputMode::Normal;
             app.removing_selected = false;
+            app.error = None;
         }
         (_, KeyCode::Char('l') | KeyCode::Right) => {
             app.removing_selected = false;
@@ -22,11 +24,15 @@ pub fn handle(app: &mut App, key: KeyEvent) {
         }
         (_, KeyCode::Enter) => {
             if app.removing_selected {
-                let _ = app.delete_path();
+                if let Err(e) = app.delete_path() {
+                    app.error = Some(e);
+                    return;
+                }
             }
 
             app.input_mode = InputMode::Normal;
             app.removing_selected = false;
+            app.error = None;
         }
         _ => {}
     }

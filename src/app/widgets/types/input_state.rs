@@ -30,7 +30,7 @@ impl InputState {
 
     pub fn insert_char(&mut self, c: char) {
         self.buffer.insert(self.cursor_position, c);
-        self.cursor_position += self.cursor_position.saturating_add(1);
+        self.cursor_position = self.cursor_position.saturating_add(1);
     }
 
     pub fn remove_char(&mut self) {
