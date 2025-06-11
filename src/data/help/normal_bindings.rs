@@ -19,7 +19,7 @@ pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 12]> = LazyLock::new(|| {
             &[(KeyModifiers::NONE, KeyCode::Esc)],
             "Reset the normal mode",
         ),
-        KeyBinding::new(
+        KeyBinding::with_count(
             "navigate down",
             &[
                 (KeyModifiers::NONE, KeyCode::Down),
@@ -27,7 +27,7 @@ pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 12]> = LazyLock::new(|| {
             ],
             "Move selection down",
         ),
-        KeyBinding::new(
+        KeyBinding::with_count(
             "navigate up",
             &[
                 (KeyModifiers::NONE, KeyCode::Up),
@@ -40,7 +40,7 @@ pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 12]> = LazyLock::new(|| {
             &[(KeyModifiers::CONTROL, KeyCode::Char('h'))],
             "Show help modal",
         ),
-        KeyBinding::new(
+        KeyBinding::with_count(
             "Go up",
             &[
                 (KeyModifiers::NONE, KeyCode::Left),

@@ -1,3 +1,5 @@
+use std::cmp::max;
+
 use ratatui::{
     layout::Constraint,
     style::{Color, Style, Stylize},
@@ -30,16 +32,22 @@ pub fn get_help_table<'a>(width: u16) -> Table<'a> {
         );
 
         for item in mode.items() {
-            let (height, description) = wrap_text(item.description(), description_width);
+            let (description_height, description) =
+                wrap_text(item.description(), description_width);
+            let (keybindings_height, keybindings) =
+                wrap_text(&format_keybindings(item.keys(), item.count()), 16);
 
             rows.push(
                 Row::new(vec![
                     Cell::from(item.name()),
-                    Cell::from(format_keybindings(item.keys()))
-                        .style(Style::default().fg(Color::Blue).bold()),
+                    Cell::from(keybindings).style(Style::default().fg(Color::Blue).bold()),
                     Cell::from(description),
                 ])
-                .height(height.try_into().unwrap_or(1)),
+                .height(
+                    max(description_height, keybindings_height)
+                        .try_into()
+                        .unwrap_or(1),
+                ),
             );
         }
     }

@@ -1,6 +1,6 @@
 use crossterm::event::{KeyCode, KeyModifiers};
 
-pub fn format_keybindings(bindings: &[(KeyModifiers, KeyCode)]) -> String {
+pub fn format_keybindings(bindings: &[(KeyModifiers, KeyCode)], count: bool) -> String {
     bindings
         .iter()
         .map(|(modifiers, code)| {
@@ -38,6 +38,9 @@ pub fn format_keybindings(bindings: &[(KeyModifiers, KeyCode)]) -> String {
                 _ => format!("{:?}", code),
             });
 
+            if count {
+                return format!("{{n}}{}", parts.join("+"));
+            }
             parts.join("+")
         })
         .collect::<Vec<_>>()
