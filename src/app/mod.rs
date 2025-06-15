@@ -5,6 +5,7 @@ mod precommand;
 mod result;
 mod ui;
 mod widgets;
+mod window;
 
 use std::{fs, path::Path};
 
@@ -12,13 +13,14 @@ use crossterm::event::{self, Event, KeyEvent, KeyEventKind};
 pub use error::Error;
 use input::handle_key_event;
 pub use input_mode::InputMode;
-use ratatui::{DefaultTerminal, Frame};
+use ratatui::{DefaultTerminal, Frame, layout::Rect};
 pub use result::Result;
 use ui::render_ui;
+use widgets::get_title;
+use window::{DefaultWindow, Window};
 
 use crate::directory_entry::{DirectoryEntry, DirectoryEntryType, read_directory};
 
-#[derive(Debug)]
 pub struct App {
     running: bool,
     directory: String,
@@ -27,24 +29,26 @@ pub struct App {
     input_mode: InputMode,
     removing_selected: bool,
     error: Option<Error>,
+    windows: Box<dyn Window>,
 }
 
 impl App {
-    pub fn new(directory: String) -> Result<Self> {
-        let path = Path::new(&directory);
+    pub fn new(directory: &str) -> Result<Self> {
+        let path = Path::new(directory);
 
         if !path.is_dir() {
-            return Err(Error::InvalidDirectoryPath(directory));
+            return Err(Error::InvalidDirectoryPath(directory.into()));
         }
 
         Ok(Self {
             running: false,
+            directory: directory.into(),
             entries: read_directory(path)?,
-            directory,
             selected_index: 0,
             input_mode: InputMode::Normal { precommand: None },
             removing_selected: false,
             error: None,
+            windows: Box::new(DefaultWindow::new(|_: &mut Frame, _: Rect| {})),
         })
     }
 
@@ -61,14 +65,10 @@ impl App {
     pub fn run(mut self, mut terminal: DefaultTerminal) -> Result<()> {
         self.running = true;
         while self.running {
-            terminal.draw(|frame| self.render(frame))?;
+            terminal.draw(|frame| render_ui(&mut self, frame))?;
             self.handle_crossterm_events()?;
         }
         Ok(())
-    }
-
-    fn render(&mut self, frame: &mut Frame) {
-        render_ui(self, frame);
     }
 
     fn handle_crossterm_events(&mut self) -> Result<()> {

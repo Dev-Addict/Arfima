@@ -13,4 +13,4 @@ pub use error::add_error_to_block;
 pub use help_table::get_help_table;
 pub use instructions::add_instructions_to_block;
 pub use precommand::add_precommand_to_block;
-pub use title::add_title_to_block;
+pub use title::{add_title_to_block, get_title};
