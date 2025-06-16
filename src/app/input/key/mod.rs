@@ -4,16 +4,18 @@ mod normal;
 mod removing;
 mod renaming;
 
-use crossterm::event::KeyEvent;
+use crossterm::event::{KeyEvent, KeyEventKind};
 
-use crate::app::{App, InputMode};
+use crate::app::App;
 
-pub fn handle_key_event(app: &mut App, key: KeyEvent) {
-    match app.input_mode {
-        InputMode::Normal { .. } => normal::handle(app, key),
-        InputMode::Adding { .. } => adding::handle(app, key),
-        InputMode::Renaming { .. } => renaming::handle(app, key),
-        InputMode::Removing { .. } => removing::handle(app, key),
-        InputMode::Help { .. } => help::handle(app, key),
+pub fn handle_key_event(app: &mut App, key: &KeyEvent) {
+    if key.kind != KeyEventKind::Press {
+        return;
     }
+
+    normal::handle(app, key);
+    adding::handle(app, key);
+    renaming::handle(app, key);
+    removing::handle(app, key);
+    help::handle(app, key);
 }

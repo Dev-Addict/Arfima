@@ -1,3 +1,5 @@
-mod file_manager_window;
+mod file_manager;
+mod split;
 
-pub use file_manager_window::FileManagerWindow;
+pub use file_manager::FileManagerWindow;
+pub use split::Split;

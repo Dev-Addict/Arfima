@@ -2,7 +2,7 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::app::{App, InputMode, precommand::Precommand};
 
-pub fn handle(app: &mut App, key: KeyEvent) {
+pub fn handle(app: &mut App, key: &KeyEvent) {
     if let InputMode::Normal { precommand } = &mut app.input_mode {
         match (key.modifiers, key.code) {
             (_, KeyCode::Char('q'))

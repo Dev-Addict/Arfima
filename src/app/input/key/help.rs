@@ -5,7 +5,7 @@ use crate::{
     data::help::get_help_entries_len,
 };
 
-pub fn handle(app: &mut App, key: KeyEvent) {
+pub fn handle(app: &mut App, key: &KeyEvent) {
     if let InputMode::Help { selected_index } = &mut app.input_mode {
         match (key.modifiers, key.code) {
             (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => app.quit(),
