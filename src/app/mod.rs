@@ -7,7 +7,10 @@ mod ui;
 mod widgets;
 mod window;
 
-use std::path::Path;
+use std::{
+    path::Path,
+    sync::mpsc::{Receiver, Sender, channel},
+};
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 pub use error::Error;
@@ -21,7 +24,8 @@ use ratatui::{
     widgets::Block,
 };
 pub use result::Result;
-use widgets::{add_title_to_block, draw_entries_table};
+use ui::render_ui;
+use widgets::{add_title_to_block, draw_entries_table, types::InputState};
 use window::{Split, Window};
 
 use crate::{
@@ -35,10 +39,13 @@ pub struct App {
     removing_selected: bool,
     error: Option<Error>,
     window: Box<dyn Window>,
+    event_rx: Receiver<AppEvent>,
 }
 
 pub enum AppEvent {
     UpdatePrecommand(Option<Precommand>),
+    SetError(Option<Error>),
+    UpdateInputMode(InputMode),
 }
 
 pub struct FileManagerWindow {
@@ -76,7 +83,13 @@ impl Window for FileManagerWindow {
         draw_entries_table(frame, area, self, block);
     }
 
-    fn handle_event(&mut self, event: &Event, focused: bool, precommand: Option<&Precommand>) {
+    fn handle_event(
+        &mut self,
+        event: &Event,
+        focused: bool,
+        precommand: Option<&Precommand>,
+        event_tx: &Sender<AppEvent>,
+    ) {
         if focused {
             if let Event::Key(key) = event {
                 if key.kind == KeyEventKind::Press {
@@ -87,7 +100,7 @@ impl Window for FileManagerWindow {
                                 count = *repeat;
                             }
 
-                            // TODO: *precommand = None;
+                            let _ = event_tx.send(AppEvent::UpdatePrecommand(None));
 
                             self.selected_index = self
                                 .selected_index
@@ -100,7 +113,7 @@ impl Window for FileManagerWindow {
                                 count = *repeat;
                             }
 
-                            // TODO: *precommand = None;
+                            let _ = event_tx.send(AppEvent::UpdatePrecommand(None));
 
                             self.selected_index = self.selected_index.saturating_sub(count);
                         }
@@ -134,7 +147,7 @@ impl Window for FileManagerWindow {
                             if let Err(e) =
                                 self.set_directory(target_directory.to_string_lossy().to_string())
                             {
-                                // TODO: app.error = Some(e);
+                                let _ = event_tx.send(AppEvent::SetError(Some(e)));
                             }
                         }
                         (_, KeyCode::Right | KeyCode::Char('l') | KeyCode::Enter) => {
@@ -152,23 +165,25 @@ impl Window for FileManagerWindow {
                             }
                         }
                         (_, KeyCode::Char('a')) => {
-                            //TODO: app.input_mode = InputMode::Adding {
-                            // state: InputState::new("", 0),
-                            // };
+                            let _ = event_tx.send(AppEvent::UpdateInputMode(InputMode::Adding {
+                                state: InputState::new("", 0),
+                            }));
                         }
                         (_, KeyCode::Char('r')) => {
                             if let Some(entry) = self.entries.get(self.selected_index) {
-                                // TODO: app.input_mode = InputMode::Renaming {
-                                // original: entry.name().into(),
-                                // state: InputState::new(entry.name(), entry.name().len()),
-                                // };
+                                let _ =
+                                    event_tx.send(AppEvent::UpdateInputMode(InputMode::Renaming {
+                                        original: entry.name().into(),
+                                        state: InputState::new(entry.name(), entry.name().len()),
+                                    }));
                             }
                         }
                         (_, KeyCode::Char('d')) => {
                             if let Some(entry) = self.entries.get(self.selected_index) {
-                                // TODO: app.input_mode = InputMode::Removing {
-                                // path: entry.path().to_string_lossy().to_string(),
-                                // };
+                                let _ =
+                                    event_tx.send(AppEvent::UpdateInputMode(InputMode::Removing {
+                                        path: entry.path().to_string_lossy().to_string(),
+                                    }));
                             }
                         }
                         (_, KeyCode::Home | KeyCode::Char('g')) => self.selected_index = 0,
@@ -191,34 +206,40 @@ impl Window for FileManagerWindow {
 }
 
 impl App {
-    pub fn new(directory: &str) -> Result<Self> {
+    pub fn new(directory: &str) -> Result<(Self, Sender<AppEvent>)> {
         let path = Path::new(directory);
 
         if !path.is_dir() {
             return Err(Error::InvalidDirectoryPath(directory.into()));
         }
 
-        Ok(Self {
-            running: false,
-            input_mode: InputMode::Normal { precommand: None },
-            removing_selected: false,
-            error: None,
-            window: Box::new(Split::new(
-                Direction::Horizontal,
-                vec![
-                    Box::new(FileManagerWindow {
-                        directory: directory.into(),
-                        entries: read_directory(path)?,
-                        selected_index: 0,
-                    }),
-                    Box::new(FileManagerWindow {
-                        directory: directory.into(),
-                        entries: read_directory(path)?,
-                        selected_index: 0,
-                    }),
-                ],
-            )),
-        })
+        let (tx, rx) = channel();
+
+        Ok((
+            Self {
+                running: false,
+                input_mode: InputMode::Normal { precommand: None },
+                removing_selected: false,
+                error: None,
+                window: Box::new(Split::new(
+                    Direction::Horizontal,
+                    vec![
+                        Box::new(FileManagerWindow {
+                            directory: directory.into(),
+                            entries: read_directory(path)?,
+                            selected_index: 0,
+                        }),
+                        Box::new(FileManagerWindow {
+                            directory: directory.into(),
+                            entries: read_directory(path)?,
+                            selected_index: 0,
+                        }),
+                    ],
+                )),
+                event_rx: rx,
+            },
+            tx,
+        ))
     }
 
     pub fn reset(&mut self) -> Result<()> {
@@ -230,16 +251,21 @@ impl App {
         Ok(())
     }
 
-    pub fn run(mut self, mut terminal: DefaultTerminal) -> Result<()> {
+    pub fn run(mut self, mut terminal: DefaultTerminal, event_tx: &Sender<AppEvent>) -> Result<()> {
         self.running = true;
         while self.running {
-            terminal.draw(|frame| self.window.render(&self, frame, frame.area(), true))?;
-            self.handle_crossterm_events()?;
+            terminal.draw(|frame| render_ui(&mut self, frame))?;
+
+            self.handle_crossterm_events(event_tx)?;
+
+            while let Ok(event) = self.event_rx.try_recv() {
+                self.handle_app_events(event)?;
+            }
         }
         Ok(())
     }
 
-    fn handle_crossterm_events(&mut self) -> Result<()> {
+    fn handle_crossterm_events(&mut self, event_tx: &Sender<AppEvent>) -> Result<()> {
         let event = event::read()?;
 
         match event {
@@ -254,7 +280,25 @@ impl App {
             _ => None,
         };
 
-        self.window.handle_event(&event, true, precommand);
+        self.window.handle_event(&event, true, precommand, event_tx);
+
+        Ok(())
+    }
+
+    fn handle_app_events(&mut self, event: AppEvent) -> Result<()> {
+        match event {
+            AppEvent::UpdatePrecommand(new_precommand) => {
+                if let InputMode::Normal { precommand } = &mut self.input_mode {
+                    *precommand = new_precommand;
+                }
+            }
+            AppEvent::SetError(e) => {
+                self.error = e;
+            }
+            AppEvent::UpdateInputMode(input_mode) => {
+                self.input_mode = input_mode;
+            }
+        }
 
         Ok(())
     }

@@ -6,6 +6,8 @@ use super::{
 };
 
 pub fn render_ui(app: &mut App, frame: &mut Frame) {
+    app.window.render(app, frame, frame.area(), true);
+
     match &app.input_mode {
         InputMode::Adding { state } => {
             show_input_modal("Add directory/file", frame, state);

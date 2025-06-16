@@ -30,7 +30,8 @@ fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
 
     let terminal = ratatui::init();
-    let result = App::new(directory.to_string_lossy().as_ref())?.run(terminal);
+    let (app, tx) = App::new(directory.to_string_lossy().as_ref())?;
+    let result = app.run(terminal, &tx);
 
     ratatui::restore();
 

@@ -1,14 +1,22 @@
+use std::sync::mpsc::Sender;
+
 use crossterm::event::Event;
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
 };
 
-use super::{App, Result, precommand::Precommand};
+use super::{App, AppEvent, Result, precommand::Precommand};
 
 pub trait Window {
     fn render(&self, app: &App, frame: &mut Frame, area: Rect, focused: bool);
-    fn handle_event(&mut self, event: &Event, focused: bool, precommand: Option<&Precommand>);
+    fn handle_event(
+        &mut self,
+        event: &Event,
+        focused: bool,
+        precommand: Option<&Precommand>,
+        event_tx: &Sender<AppEvent>,
+    );
 
     fn reset(&mut self) -> Result<()> {
         Ok(())
@@ -43,9 +51,20 @@ impl Window for Split {
         }
     }
 
-    fn handle_event(&mut self, event: &Event, focused: bool, precommand: Option<&Precommand>) {
+    fn handle_event(
+        &mut self,
+        event: &Event,
+        focused: bool,
+        precommand: Option<&Precommand>,
+        event_tx: &Sender<AppEvent>,
+    ) {
         for (i, window) in self.windows.iter_mut().enumerate() {
-            window.handle_event(event, focused && self.focused_index == i, precommand);
+            window.handle_event(
+                event,
+                focused && self.focused_index == i,
+                precommand,
+                event_tx,
+            );
         }
     }
 
