@@ -1,14 +1,14 @@
 use ratatui::{
     Frame,
-    layout::Constraint,
+    layout::{Constraint, Rect},
     style::{Color, Style, Stylize},
     text::Span,
     widgets::{Block, Cell, Row, Table, TableState},
 };
 
-use crate::app::App;
+use crate::app::FileManagerWindow;
 
-pub fn draw_entries_table(frame: &mut Frame, app: &App, block: Block) {
+pub fn draw_entries_table(frame: &mut Frame, area: Rect, app: &FileManagerWindow, block: Block) {
     let rows: Vec<Row> = app
         .entries
         .iter()
@@ -47,5 +47,5 @@ pub fn draw_entries_table(frame: &mut Frame, app: &App, block: Block) {
     let mut state = TableState::default();
     state.select(Some(app.selected_index));
 
-    frame.render_stateful_widget(table, frame.area(), &mut state);
+    frame.render_stateful_widget(table, area, &mut state);
 }
