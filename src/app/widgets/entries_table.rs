@@ -6,11 +6,16 @@ use ratatui::{
     widgets::{Block, Cell, Row, Table, TableState},
 };
 
-use crate::app::FileManagerWindow;
+use crate::directory_entry::DirectoryEntry;
 
-pub fn draw_entries_table(frame: &mut Frame, area: Rect, app: &FileManagerWindow, block: Block) {
-    let rows: Vec<Row> = app
-        .entries
+pub fn draw_entries_table(
+    frame: &mut Frame,
+    area: Rect,
+    entries: &[DirectoryEntry],
+    selected_index: usize,
+    block: Block,
+) {
+    let rows: Vec<Row> = entries
         .iter()
         .map(|entry| {
             let (icon, color) = entry.icon();
@@ -45,7 +50,7 @@ pub fn draw_entries_table(frame: &mut Frame, area: Rect, app: &FileManagerWindow
         .block(block);
 
     let mut state = TableState::default();
-    state.select(Some(app.selected_index));
+    state.select(Some(selected_index));
 
     frame.render_stateful_widget(table, area, &mut state);
 }

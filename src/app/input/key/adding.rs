@@ -16,13 +16,6 @@ pub fn handle(app: &mut App, key: KeyEvent) {
             (_, KeyCode::Right) => state.right(),
             (_, KeyCode::Home) => state.set_cursor_position(0),
             (_, KeyCode::End) => state.set_cursor_position(state.buffer().len()),
-            (_, KeyCode::Enter) => match app.add_path() {
-                Ok(_) => {
-                    app.input_mode = InputMode::Normal { precommand: None };
-                    app.error = None;
-                }
-                Err(e) => app.error = Some(e),
-            },
             _ => {}
         }
     }

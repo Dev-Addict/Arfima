@@ -4,8 +4,6 @@ use ratatui::{
     widgets::{Block, block::Title},
 };
 
-use crate::app::FileManagerWindow;
-
 pub fn get_title<'a>(path: String) -> impl Into<Title<'a>> {
     let mut title_items: Vec<Span> = vec![
         Span::styled("", Style::default()),
@@ -30,14 +28,14 @@ pub fn get_title<'a>(path: String) -> impl Into<Title<'a>> {
     Line::from(title_items).bold()
 }
 
-pub fn add_title_to_block<'a>(window: &'_ FileManagerWindow, block: Block<'a>) -> Block<'a> {
+pub fn add_title_to_block<'a>(directory: &'a str, block: Block<'a>) -> Block<'a> {
     let mut title_items: Vec<Span> = vec![
         Span::styled("", Style::default()),
         Span::styled(" Arfima ", Style::default().reversed()),
         Span::styled("╱", Style::default().reversed().bg(Color::Reset)),
     ];
 
-    for directory in window.directory[1..].split("/") {
+    for directory in directory[1..].split("/") {
         title_items.push(Span::styled(
             format!(" {} ", directory),
             Style::default().reversed(),

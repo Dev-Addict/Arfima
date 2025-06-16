@@ -8,7 +8,7 @@ use ratatui::{
 
 use crate::{
     app::widgets::{centered_rect::get_centered_rect, types::InputState},
-    utils::{all_but_first, first_char_str},
+    utils::{str::all_but_first, str::first_char_str},
 };
 
 pub fn show_input_modal(title: &str, frame: &mut Frame, state: &InputState) {

@@ -15,11 +15,13 @@ pub fn render_ui(app: &mut App, frame: &mut Frame) {
         InputMode::Renaming { state, .. } => {
             show_input_modal("Rename directory/file", frame, state);
         }
-        InputMode::Removing { .. } => {
+        InputMode::Removing {
+            removing_selected, ..
+        } => {
             show_yes_no_modal(
                 "Are you sure you want to delete directory/file?",
                 frame,
-                app.removing_selected,
+                *removing_selected,
             );
         }
         InputMode::Help { selected_index } => {

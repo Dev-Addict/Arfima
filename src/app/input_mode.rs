@@ -4,11 +4,23 @@ use super::{precommand::Precommand, widgets::types::InputState};
 
 #[derive(Debug)]
 pub enum InputMode {
-    Normal { precommand: Option<Precommand> },
-    Adding { state: InputState },
-    Renaming { original: String, state: InputState },
-    Removing { path: String },
-    Help { selected_index: usize },
+    Normal {
+        precommand: Option<Precommand>,
+    },
+    Adding {
+        state: InputState,
+    },
+    Renaming {
+        original: String,
+        state: InputState,
+    },
+    Removing {
+        path: String,
+        removing_selected: bool,
+    },
+    Help {
+        selected_index: usize,
+    },
 }
 
 impl InputMode {
@@ -28,6 +40,7 @@ impl InputMode {
     pub fn removing_default() -> Self {
         Self::Removing {
             path: String::default(),
+            removing_selected: false,
         }
     }
 

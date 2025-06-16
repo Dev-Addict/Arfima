@@ -8,7 +8,7 @@ use ratatui::{
 
 use crate::{
     data::help::get_help,
-    utils::{format_keybindings, wrap_text},
+    utils::{format_keybindings, str::wrap_text},
 };
 
 pub fn get_help_table<'a>(width: u16) -> Table<'a> {
