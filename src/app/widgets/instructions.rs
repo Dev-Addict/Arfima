@@ -1,18 +1,21 @@
-use ratatui::{style::Stylize, text::Line, widgets::Block};
+use ratatui::{Frame, layout::Rect, style::Stylize, text::Line};
 
-pub fn add_instructions_to_block(block: Block) -> Block {
-    block.title_bottom(Line::from(vec![
-        " Up ".into(),
-        "<K>".blue().bold(),
-        " Down ".into(),
-        "<J>".blue().bold(),
-        " Back ".into(),
-        "<H>".blue().bold(),
-        " Down ".into(),
-        "<J>".blue().bold(),
-        " Help ".into(),
-        "<Ctrl+H>".blue().bold(),
-        " Quit ".into(),
-        "<Q> ".blue().bold(),
-    ]))
+pub fn render_instructions(frame: &mut Frame, area: Rect) {
+    frame.render_widget(
+        Line::from(vec![
+            " Up ".into(),
+            "<K>".blue().bold(),
+            " Down ".into(),
+            "<J>".blue().bold(),
+            " Back ".into(),
+            "<H>".blue().bold(),
+            " Down ".into(),
+            "<J>".blue().bold(),
+            " Help ".into(),
+            "<Ctrl+H>".blue().bold(),
+            " Quit ".into(),
+            "<Q> ".blue().bold(),
+        ]),
+        area,
+    );
 }

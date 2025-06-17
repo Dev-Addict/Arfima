@@ -1,10 +1,13 @@
-use ratatui::widgets::Block;
+use ratatui::{Frame, layout::Rect, text::Line};
 
 use crate::app::precommand::Precommand;
 
-pub fn add_precommand_to_block<'a>(block: Block<'a>, precommand: &'a Precommand) -> Block<'a> {
-    block.title_bottom(match precommand {
-        Precommand::Leader => " <leader> ".to_string(),
-        Precommand::Repeat(repeat) => format!(" {} ", repeat),
-    })
+pub fn render_precommand(frame: &mut Frame, area: Rect, precommand: &Precommand) {
+    frame.render_widget(
+        Line::from(match precommand {
+            Precommand::Leader => " <leader> ".to_string(),
+            Precommand::Repeat(repeat) => format!(" {} ", repeat),
+        }),
+        area,
+    );
 }

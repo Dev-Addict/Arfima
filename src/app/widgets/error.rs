@@ -1,7 +1,7 @@
-use ratatui::{style::Stylize, widgets::Block};
+use ratatui::{Frame, layout::Rect, style::Stylize};
 
 use crate::app::Error;
 
-pub fn add_error_to_block<'a>(block: Block<'a>, error: &'a Error) -> Block<'a> {
-    block.title_bottom(format!(" {} ", error).red())
+pub fn render_error(frame: &mut Frame, area: Rect, error: &Error) {
+    frame.render_widget(format!(" {} ", error).red(), area);
 }
