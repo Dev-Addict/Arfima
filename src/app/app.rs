@@ -83,4 +83,16 @@ impl App {
     pub fn quit(&mut self) {
         self.running = false;
     }
+
+    pub fn next_window(&mut self) {
+        if !self.window.next_window() {
+            self.window.abs_next_window();
+        }
+    }
+
+    pub fn prev_window(&mut self) {
+        if !self.window.prev_window() {
+            self.window.abs_prev_window();
+        }
+    }
 }

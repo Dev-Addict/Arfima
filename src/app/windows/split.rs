@@ -73,4 +73,61 @@ impl Window for Split {
 
         Box::new(this)
     }
+
+    fn next_window(&mut self) -> bool {
+        if let Some(window) = self.windows.get_mut(self.focused_index) {
+            if !window.next_window() {
+                if self.focused_index < self.windows.len().saturating_sub(1) {
+                    self.focused_index = self.focused_index.saturating_add(1);
+                    true
+                } else {
+                    false
+                }
+            } else {
+                true
+            }
+        } else {
+            false
+        }
+    }
+
+    fn abs_next_window(&mut self) {
+        if self.windows.is_empty() {
+            return;
+        }
+
+        self.focused_index = self.focused_index.saturating_add(1) % self.windows.len();
+        if let Some(window) = self.windows.get_mut(self.focused_index) {
+            window.abs_next_window();
+        }
+    }
+
+    fn prev_window(&mut self) -> bool {
+        if let Some(window) = self.windows.get_mut(self.focused_index) {
+            if !window.prev_window() {
+                if self.focused_index > 0 {
+                    self.focused_index = self.focused_index.saturating_sub(1);
+                    true
+                } else {
+                    false
+                }
+            } else {
+                true
+            }
+        } else {
+            false
+        }
+    }
+
+    fn abs_prev_window(&mut self) {
+        if self.focused_index == 0 {
+            self.focused_index = self.windows.len().saturating_sub(1);
+        } else {
+            self.focused_index = self.focused_index.saturating_sub(1);
+        }
+
+        if let Some(window) = self.windows.get_mut(self.focused_index) {
+            window.abs_prev_window();
+        }
+    }
 }

@@ -22,4 +22,16 @@ pub trait Window {
     fn reset(&mut self) -> Result<()> {
         Ok(())
     }
+
+    fn next_window(&mut self) -> bool {
+        false
+    }
+
+    fn abs_next_window(&mut self) {}
+
+    fn prev_window(&mut self) -> bool {
+        false
+    }
+
+    fn abs_prev_window(&mut self) {}
 }

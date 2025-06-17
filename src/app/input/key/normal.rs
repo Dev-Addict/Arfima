@@ -17,8 +17,43 @@ pub fn handle(app: &mut App, key: &KeyEvent) {
                 app.input_mode = InputMode::Help { selected_index: 0 };
             }
             (KeyModifiers::CONTROL, KeyCode::Char('w')) => {
-                let window = std::mem::replace(&mut app.window, Box::new(DummyWindow));
-                app.window = window.split(Direction::Horizontal);
+                if let Some(Precommand::Window) = precommand {
+                    *precommand = None;
+
+                    app.next_window();
+                } else {
+                    *precommand = Some(Precommand::Window);
+                }
+            }
+            (_, KeyCode::Char('h')) => {
+                if let Some(Precommand::Window) = precommand {
+                    *precommand = None;
+
+                    let window = std::mem::replace(&mut app.window, Box::new(DummyWindow));
+                    app.window = window.split(Direction::Horizontal);
+                }
+            }
+            (_, KeyCode::Char('v')) => {
+                if let Some(Precommand::Window) = precommand {
+                    *precommand = None;
+
+                    let window = std::mem::replace(&mut app.window, Box::new(DummyWindow));
+                    app.window = window.split(Direction::Vertical);
+                }
+            }
+            (_, KeyCode::Right | KeyCode::Char('j')) => {
+                if let Some(Precommand::Window) = precommand {
+                    *precommand = None;
+
+                    app.next_window();
+                }
+            }
+            (_, KeyCode::Left | KeyCode::Char('k')) => {
+                if let Some(Precommand::Window) = precommand {
+                    *precommand = None;
+
+                    app.prev_window();
+                }
             }
             (_, KeyCode::Char(c)) => {
                 if c.is_ascii_digit() {
@@ -33,7 +68,7 @@ pub fn handle(app: &mut App, key: &KeyEvent) {
                     }
                 }
             }
-            _ => {}
+            _ => *precommand = None,
         }
     }
 }

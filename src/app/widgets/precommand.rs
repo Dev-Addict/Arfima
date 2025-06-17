@@ -7,6 +7,7 @@ pub fn render_precommand(frame: &mut Frame, area: Rect, precommand: &Precommand)
         Line::from(match precommand {
             Precommand::Leader => " <leader> ".to_string(),
             Precommand::Repeat(repeat) => format!(" {} ", repeat),
+            Precommand::Window => "^W".to_string(),
         }),
         area,
     );
