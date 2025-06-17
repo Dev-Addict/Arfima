@@ -130,4 +130,32 @@ impl Window for Split {
             window.abs_prev_window();
         }
     }
+
+    fn quit_focused_window(self: Box<Self>) -> Option<Box<dyn Window>> {
+        let mut this = *self;
+
+        if this.windows.is_empty() {
+            return None;
+        }
+
+        if let Some(window) = this.windows.get_mut(this.focused_index) {
+            let old_window = std::mem::replace(window, Box::new(DummyWindow));
+            if let Some(new_child) = old_window.quit_focused_window() {
+                this.windows[this.focused_index] = new_child;
+                return Some(Box::new(this));
+            }
+        }
+
+        this.windows.remove(this.focused_index);
+
+        if this.windows.is_empty() {
+            return None;
+        } else if this.windows.len() == 1 {
+            return Some(this.windows.remove(0));
+        } else if this.focused_index >= this.windows.len() {
+            this.focused_index = this.windows.len() - 1;
+        }
+
+        Some(Box::new(this))
+    }
 }

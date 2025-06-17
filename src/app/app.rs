@@ -4,8 +4,11 @@ use crossterm::event::{self};
 use ratatui::DefaultTerminal;
 
 use super::{
-    AppEvent, Error, InputMode, Result, input::handle_event, ui::render_ui, window::Window,
-    windows::FileManagerWindow,
+    AppEvent, Error, InputMode, Result,
+    input::handle_event,
+    ui::render_ui,
+    window::Window,
+    windows::{DummyWindow, FileManagerWindow},
 };
 
 pub struct App {
@@ -93,6 +96,16 @@ impl App {
     pub fn prev_window(&mut self) {
         if !self.window.prev_window() {
             self.window.abs_prev_window();
+        }
+    }
+
+    pub fn quit_focused_window(&mut self) {
+        let window = std::mem::replace(&mut self.window, Box::new(DummyWindow));
+
+        if let Some(window) = window.quit_focused_window() {
+            self.window = window;
+        } else {
+            self.quit();
         }
     }
 }

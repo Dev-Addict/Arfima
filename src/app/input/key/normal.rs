@@ -6,8 +6,8 @@ use crate::app::{App, InputMode, precommand::Precommand, windows::DummyWindow};
 pub fn handle(app: &mut App, key: &KeyEvent) {
     if let InputMode::Normal { precommand } = &mut app.input_mode {
         match (key.modifiers, key.code) {
-            (_, KeyCode::Char('q'))
-            | (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => app.quit(),
+            (_, KeyCode::Char('q')) => app.quit_focused_window(),
+            (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => app.quit(),
             (_, KeyCode::Esc) => {
                 if let Err(e) = app.reset() {
                     app.error = Some(e);

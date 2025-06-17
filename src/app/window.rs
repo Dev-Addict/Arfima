@@ -34,4 +34,8 @@ pub trait Window {
     }
 
     fn abs_prev_window(&mut self) {}
+
+    fn quit_focused_window(self: Box<Self>) -> Option<Box<dyn Window>> {
+        None
+    }
 }
