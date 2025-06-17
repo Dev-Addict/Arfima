@@ -3,7 +3,7 @@ use ratatui::layout::Direction;
 
 use crate::app::{App, InputMode, precommand::Precommand, windows::DummyWindow};
 
-pub fn handle(app: &mut App, key: &KeyEvent) {
+pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
     if let InputMode::Normal { precommand } = &mut app.input_mode {
         match (key.modifiers, key.code) {
             (_, KeyCode::Char('q')) => app.quit_focused_window(),
@@ -68,7 +68,14 @@ pub fn handle(app: &mut App, key: &KeyEvent) {
                     }
                 }
             }
-            _ => *precommand = None,
+            _ => {
+                *precommand = None;
+                return false;
+            }
         }
+
+        return true;
     }
+
+    false
 }

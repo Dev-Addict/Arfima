@@ -16,7 +16,7 @@ pub fn handle(
     input_mode: &InputMode,
     key: &KeyEvent,
     event_tx: &Sender<AppEvent>,
-) {
+) -> bool {
     if let InputMode::Normal { precommand } = input_mode {
         match (key.modifiers, key.code) {
             (_, KeyCode::Down | KeyCode::Char('j')) => {
@@ -46,7 +46,7 @@ pub fn handle(
                 let mut count = 0;
                 if let Some(Precommand::Repeat(repeat)) = precommand {
                     if *repeat == 0 {
-                        return;
+                        return true;
                     }
 
                     count = repeat.saturating_sub(1);
@@ -57,7 +57,7 @@ pub fn handle(
                 if let Some(parent) = Path::new(&window.directory).parent() {
                     target_directory = parent;
                 } else {
-                    return;
+                    return true;
                 }
 
                 while let Some(parent) = Path::new(target_directory).parent() {
@@ -112,7 +112,13 @@ pub fn handle(
             (_, KeyCode::End | KeyCode::Char('G')) => {
                 window.selected_index = window.entries.len().saturating_sub(1)
             }
-            _ => {}
+            _ => {
+                return false;
+            }
         }
+
+        return true;
     }
+
+    false
 }

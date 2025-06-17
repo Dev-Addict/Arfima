@@ -2,7 +2,7 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::app::{App, InputMode};
 
-pub fn handle(app: &mut App, key: &KeyEvent) {
+pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
     if let InputMode::Renaming { state, .. } = &mut app.input_mode {
         match (key.modifiers, key.code) {
             (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => app.quit(),
@@ -16,7 +16,13 @@ pub fn handle(app: &mut App, key: &KeyEvent) {
             (_, KeyCode::Right) => state.right(),
             (_, KeyCode::Home) => state.set_cursor_position(0),
             (_, KeyCode::End) => state.set_cursor_position(state.buffer().len()),
-            _ => {}
+            _ => {
+                return false;
+            }
         }
+
+        return true;
     }
+
+    false
 }

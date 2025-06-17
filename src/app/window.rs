@@ -16,7 +16,8 @@ pub trait Window {
         event: &Event,
         focused: bool,
         event_tx: &Sender<AppEvent>,
-    );
+        handled: bool,
+    ) -> bool;
     fn split(self: Box<Self>, direction: Direction) -> Box<dyn Window>;
 
     fn reset(&mut self) -> Result<()> {

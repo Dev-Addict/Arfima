@@ -78,12 +78,13 @@ impl Window for FileManagerWindow {
         event: &Event,
         focused: bool,
         event_tx: &Sender<AppEvent>,
-    ) {
-        if !focused {
-            return;
+        handled: bool,
+    ) -> bool {
+        if !focused || handled {
+            return false;
         }
 
-        handle_event(self, input_mode, event, event_tx);
+        handle_event(self, input_mode, event, event_tx)
     }
 
     fn reset(&mut self) -> Result<()> {

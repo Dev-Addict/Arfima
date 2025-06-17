@@ -14,8 +14,10 @@ pub fn handle_event(
     input_mode: &InputMode,
     event: &Event,
     event_tx: &Sender<AppEvent>,
-) {
+) -> bool {
     if let Event::Key(key) = event {
-        handle_key_event(window, input_mode, key, event_tx);
+        return handle_key_event(window, input_mode, key, event_tx);
     }
+
+    false
 }

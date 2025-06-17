@@ -5,7 +5,7 @@ use crate::{
     data::help::get_help_entries_len,
 };
 
-pub fn handle(app: &mut App, key: &KeyEvent) {
+pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
     if let InputMode::Help { selected_index } = &mut app.input_mode {
         match (key.modifiers, key.code) {
             (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => app.quit(),
@@ -26,7 +26,13 @@ pub fn handle(app: &mut App, key: &KeyEvent) {
             (_, KeyCode::End | KeyCode::Char('G')) => {
                 *selected_index = get_help_entries_len().saturating_sub(1)
             }
-            _ => {}
+            _ => {
+                return false;
+            }
         }
+
+        return true;
     }
+
+    false
 }

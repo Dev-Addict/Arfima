@@ -8,14 +8,22 @@ use crossterm::event::{KeyEvent, KeyEventKind};
 
 use crate::app::App;
 
-pub fn handle_key_event(app: &mut App, key: &KeyEvent) {
+pub fn handle_key_event(app: &mut App, key: &KeyEvent) -> bool {
     if key.kind != KeyEventKind::Press {
-        return;
+        return false;
     }
 
-    normal::handle(app, key);
-    adding::handle(app, key);
-    renaming::handle(app, key);
-    removing::handle(app, key);
-    help::handle(app, key);
+    if normal::handle(app, key) {
+        return true;
+    }
+    if adding::handle(app, key) {
+        return true;
+    }
+    if renaming::handle(app, key) {
+        return true;
+    }
+    if removing::handle(app, key) {
+        return true;
+    }
+    help::handle(app, key)
 }

@@ -2,7 +2,7 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::app::{App, InputMode};
 
-pub fn handle(app: &mut App, key: &KeyEvent) {
+pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
     if let InputMode::Removing {
         removing_selected, ..
     } = &mut app.input_mode
@@ -20,7 +20,13 @@ pub fn handle(app: &mut App, key: &KeyEvent) {
             (_, KeyCode::Char('h') | KeyCode::Left) => {
                 *removing_selected = true;
             }
-            _ => {}
+            _ => {
+                return false;
+            }
         }
+
+        return true;
     }
+
+    false
 }

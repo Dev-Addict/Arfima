@@ -12,7 +12,7 @@ pub fn handle(
     input_mode: &InputMode,
     key: &KeyEvent,
     event_tx: &Sender<AppEvent>,
-) {
+) -> bool {
     if let InputMode::Removing {
         removing_selected,
         path,
@@ -30,7 +30,7 @@ pub fn handle(
                         }
                         Err(e) => {
                             let _ = event_tx.send(AppEvent::SetError(Some(e)));
-                            return;
+                            return true;
                         }
                     }
                 }
@@ -50,7 +50,7 @@ pub fn handle(
                     }
                     Err(e) => {
                         let _ = event_tx.send(AppEvent::SetError(Some(e)));
-                        return;
+                        return true;
                     }
                 }
 
@@ -59,7 +59,13 @@ pub fn handle(
                 }));
                 let _ = event_tx.send(AppEvent::SetError(None));
             }
-            _ => (),
+            _ => {
+                return false;
+            }
         }
+
+        return true;
     }
+
+    false
 }

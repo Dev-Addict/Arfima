@@ -12,7 +12,7 @@ pub fn handle(
     input_mode: &InputMode,
     key: &KeyEvent,
     event_tx: &Sender<AppEvent>,
-) {
+) -> bool {
     if let InputMode::Renaming { state, original } = input_mode {
         if let (_, KeyCode::Enter) = (key.modifiers, key.code) {
             match rename_path(&window.directory, state, original, event_tx) {
@@ -26,6 +26,12 @@ pub fn handle(
                     let _ = event_tx.send(AppEvent::SetError(Some(e)));
                 }
             }
+
+            return true;
         }
+
+        return false;
     }
+
+    false
 }

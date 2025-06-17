@@ -5,8 +5,10 @@ use key::handle_key_event;
 
 use super::App;
 
-pub fn handle_event(app: &mut App, event: &Event) {
+pub fn handle_event(app: &mut App, event: &Event) -> bool {
     if let Event::Key(key) = event {
-        handle_key_event(app, key);
+        return handle_key_event(app, key);
     }
+
+    false
 }

@@ -44,15 +44,21 @@ impl Window for Split {
         event: &Event,
         focused: bool,
         event_tx: &Sender<AppEvent>,
-    ) {
+        mut handled: bool,
+    ) -> bool {
         for (i, window) in self.windows.iter_mut().enumerate() {
-            window.handle_event(
+            if window.handle_event(
                 input_mode,
                 event,
                 focused && self.focused_index == i,
                 event_tx,
-            );
+                handled,
+            ) {
+                handled = true;
+            }
         }
+
+        handled
     }
 
     fn reset(&mut self) -> Result<()> {

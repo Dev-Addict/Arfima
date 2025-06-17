@@ -61,9 +61,9 @@ impl App {
     fn handle_crossterm_events(&mut self, event_tx: &Sender<AppEvent>) -> Result<()> {
         let event = event::read()?;
 
-        handle_event(self, &event);
+        let handled = handle_event(self, &event);
         self.window
-            .handle_event(&self.input_mode, &event, true, event_tx);
+            .handle_event(&self.input_mode, &event, true, event_tx, handled);
 
         Ok(())
     }

@@ -16,13 +16,19 @@ pub fn handle_key_event(
     input_mode: &InputMode,
     key: &KeyEvent,
     event_tx: &Sender<AppEvent>,
-) {
+) -> bool {
     if key.kind != KeyEventKind::Press {
-        return;
+        return false;
     }
 
-    normal::handle(window, input_mode, key, event_tx);
-    adding::handle(window, input_mode, key, event_tx);
-    renaming::handle(window, input_mode, key, event_tx);
-    removing::handle(window, input_mode, key, event_tx);
+    if normal::handle(window, input_mode, key, event_tx) {
+        return true;
+    }
+    if adding::handle(window, input_mode, key, event_tx) {
+        return true;
+    }
+    if renaming::handle(window, input_mode, key, event_tx) {
+        return true;
+    }
+    removing::handle(window, input_mode, key, event_tx)
 }
