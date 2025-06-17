@@ -25,27 +25,35 @@ pub fn draw_entries_table(
                 None => Span::raw(icon),
             };
 
-            Row::new(vec![
-                Cell::from(icon),
-                Cell::from(entry.name()),
-                Cell::from(entry.formatted_size().unwrap_or_default()),
-                Cell::from(entry.formatted_modified().unwrap_or_default()),
-            ])
+            let mut cells = vec![Cell::from(icon), Cell::from(entry.name())];
+
+            if area.width >= 36 {
+                cells.push(Cell::from(entry.formatted_size().unwrap_or_default()));
+            }
+
+            if area.width >= 54 {
+                cells.push(Cell::from(entry.formatted_modified().unwrap_or_default()));
+            }
+
+            Row::new(cells)
         })
         .collect();
 
-    let widths = [
-        Constraint::Length(2),
-        Constraint::Fill(1),
-        Constraint::Min(6),
-        Constraint::Min(10),
-    ];
+    let mut widths = vec![Constraint::Length(2), Constraint::Fill(1)];
+    let mut headers = vec!["", "Name"];
+
+    if area.width >= 36 {
+        widths.push(Constraint::Min(6));
+        headers.push("Size");
+    }
+
+    if area.width >= 54 {
+        widths.push(Constraint::Min(18));
+        headers.push("Modified");
+    }
 
     let table = Table::new(rows, widths)
-        .header(
-            Row::new(vec!["", "Name", "Size", "Modified"])
-                .style(Style::default().fg(Color::Cyan).bold()),
-        )
+        .header(Row::new(headers).style(Style::default().fg(Color::Cyan).bold()))
         .row_highlight_style(Style::default().reversed().bold())
         .block(block);
 
