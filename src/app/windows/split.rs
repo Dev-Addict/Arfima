@@ -8,6 +8,8 @@ use ratatui::{
 
 use crate::app::{App, AppEvent, InputMode, Result, window::Window};
 
+use super::DummyWindow;
+
 pub struct Split {
     direction: Direction,
     windows: Vec<Box<dyn Window>>,
@@ -59,5 +61,16 @@ impl Window for Split {
         }
 
         Ok(())
+    }
+
+    fn split(self: Box<Self>, direction: Direction) -> Box<dyn Window> {
+        let mut this = *self;
+
+        if let Some(window) = this.windows.get_mut(this.focused_index) {
+            let focused_window = std::mem::replace(window, Box::new(DummyWindow));
+            *window = focused_window.split(direction);
+        }
+
+        Box::new(this)
     }
 }

@@ -6,7 +6,7 @@ use crossterm::event::Event;
 use input::handle_event;
 use ratatui::{
     Frame,
-    layout::Rect,
+    layout::{Direction, Rect},
     style::{Color, Style},
     widgets::Block,
 };
@@ -20,6 +20,9 @@ use crate::{
     directory_entry::{DirectoryEntry, read_directory},
 };
 
+use super::Split;
+
+#[derive(Clone)]
 pub struct FileManagerWindow {
     directory: String,
     entries: Vec<DirectoryEntry>,
@@ -88,5 +91,19 @@ impl Window for FileManagerWindow {
         self.selected_index = self.selected_index.min(self.entries.len() - 1);
 
         Ok(())
+    }
+
+    fn split(self: Box<Self>, direction: Direction) -> Box<dyn Window> {
+        Box::new(Split::new(
+            direction,
+            vec![
+                Box::new(FileManagerWindow {
+                    directory: self.directory.clone(),
+                    entries: self.entries.clone(),
+                    selected_index: 0,
+                }),
+                self,
+            ],
+        ))
     }
 }

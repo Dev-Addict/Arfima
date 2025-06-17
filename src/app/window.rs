@@ -1,7 +1,10 @@
 use std::sync::mpsc::Sender;
 
 use crossterm::event::Event;
-use ratatui::{Frame, layout::Rect};
+use ratatui::{
+    Frame,
+    layout::{Direction, Rect},
+};
 
 use super::{App, AppEvent, InputMode, Result};
 
@@ -14,6 +17,7 @@ pub trait Window {
         focused: bool,
         event_tx: &Sender<AppEvent>,
     );
+    fn split(self: Box<Self>, direction: Direction) -> Box<dyn Window>;
 
     fn reset(&mut self) -> Result<()> {
         Ok(())

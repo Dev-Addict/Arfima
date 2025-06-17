@@ -16,7 +16,7 @@ use crate::utils::get_icon_and_color;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct DirectoryEntry {
     name: String,
     path: PathBuf,

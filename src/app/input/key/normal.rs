@@ -1,6 +1,7 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use ratatui::layout::Direction;
 
-use crate::app::{App, InputMode, precommand::Precommand};
+use crate::app::{App, InputMode, precommand::Precommand, windows::DummyWindow};
 
 pub fn handle(app: &mut App, key: &KeyEvent) {
     if let InputMode::Normal { precommand } = &mut app.input_mode {
@@ -14,6 +15,10 @@ pub fn handle(app: &mut App, key: &KeyEvent) {
             }
             (KeyModifiers::CONTROL, KeyCode::Char('h')) => {
                 app.input_mode = InputMode::Help { selected_index: 0 };
+            }
+            (KeyModifiers::CONTROL, KeyCode::Char('w')) => {
+                let window = std::mem::replace(&mut app.window, Box::new(DummyWindow));
+                app.window = window.split(Direction::Horizontal);
             }
             (_, KeyCode::Char(c)) => {
                 if c.is_ascii_digit() {
