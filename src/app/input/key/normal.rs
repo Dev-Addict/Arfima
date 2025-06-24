@@ -31,7 +31,11 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
 
                     let window = std::mem::replace(&mut app.window, Box::new(DummyWindow));
                     app.window = window.split(Direction::Horizontal);
+
+                    return true;
                 }
+
+                return false;
             }
             (_, KeyCode::Char('v')) => {
                 if let Some(Precommand::Window) = precommand {
@@ -39,21 +43,33 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
 
                     let window = std::mem::replace(&mut app.window, Box::new(DummyWindow));
                     app.window = window.split(Direction::Vertical);
+
+                    return true;
                 }
+
+                return false;
             }
             (_, KeyCode::Right | KeyCode::Char('j')) => {
                 if let Some(Precommand::Window) = precommand {
                     *precommand = None;
 
                     app.next_window();
+
+                    return true;
                 }
+
+                return false;
             }
             (_, KeyCode::Left | KeyCode::Char('k')) => {
                 if let Some(Precommand::Window) = precommand {
                     *precommand = None;
 
                     app.prev_window();
+
+                    return true;
                 }
+
+                return false;
             }
             (_, KeyCode::Char(c)) => {
                 if c.is_ascii_digit() {
@@ -66,7 +82,11 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                         },
                         None => *precommand = Some(Precommand::Repeat(digit)),
                     }
+
+                    return true;
                 }
+
+                return false;
             }
             _ => {
                 *precommand = None;
