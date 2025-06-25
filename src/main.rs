@@ -3,6 +3,7 @@
 mod app;
 mod data;
 mod directory_entry;
+mod types;
 mod utils;
 
 use std::{env, path::PathBuf};

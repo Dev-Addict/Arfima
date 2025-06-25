@@ -3,7 +3,7 @@ mod directory_entry_type;
 mod error;
 mod read_directory;
 
-use std::{cmp::Ordering, path::PathBuf, time::SystemTime};
+use std::{path::PathBuf, time::SystemTime};
 
 use chrono::{DateTime, Local};
 pub use directory_entry_builder::DirectoryEntryBuilder;
@@ -12,13 +12,13 @@ pub use error::Error;
 use ratatui::style::Color;
 pub use read_directory::read_directory;
 
-use crate::utils::{get_icon_and_color, str::parse_num_prefix};
+use crate::{types::NaturalString, utils::get_icon_and_color};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct DirectoryEntry {
-    name: String,
+    name: NaturalString,
     path: PathBuf,
     modified: Option<SystemTime>,
     entry_type: DirectoryEntryType,
@@ -30,11 +30,11 @@ impl DirectoryEntry {
     }
 
     pub fn name(&self) -> &str {
-        &self.name
+        self.name.str()
     }
 
     pub fn set_name(&mut self, name: String) {
-        self.name = name;
+        self.name = NaturalString::new(&name);
     }
 
     pub fn path(&self) -> &PathBuf {
@@ -115,10 +115,7 @@ impl Ord for DirectoryEntry {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         if self.entry_type == DirectoryEntryType::Directory {
             if other.entry_type == DirectoryEntryType::Directory {
-                return match (parse_num_prefix(&self.name), parse_num_prefix(&other.name)) {
-                    (Some((ns, rs)), Some((no, ro))) => ns.cmp(&no).then(rs.cmp(ro)),
-                    _ => self.name.cmp(&other.name),
-                };
+                return self.name.cmp(&other.name);
             }
 
             return std::cmp::Ordering::Less;
@@ -128,9 +125,6 @@ impl Ord for DirectoryEntry {
             return std::cmp::Ordering::Greater;
         }
 
-        match (parse_num_prefix(&self.name), parse_num_prefix(&other.name)) {
-            (Some((ns, rs)), Some((no, ro))) => ns.cmp(&no).then(rs.cmp(ro)),
-            _ => self.name.cmp(&other.name),
-        }
+        self.name.cmp(&other.name)
     }
 }

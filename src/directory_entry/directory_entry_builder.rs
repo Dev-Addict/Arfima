@@ -1,9 +1,11 @@
 use std::{path::PathBuf, time::SystemTime};
 
+use crate::types::NaturalString;
+
 use super::{DirectoryEntry, DirectoryEntryType, Error, Result};
 
 pub struct DirectoryEntryBuilder {
-    name: Option<String>,
+    name: Option<NaturalString>,
     path: Option<PathBuf>,
     modified: Option<SystemTime>,
     entry_type: Option<DirectoryEntryType>,
@@ -20,7 +22,8 @@ impl DirectoryEntryBuilder {
     }
 
     pub fn name(mut self, name: impl Into<String>) -> Self {
-        self.name = Some(name.into());
+        let string_name: String = name.into();
+        self.name = Some(string_name.into());
         self
     }
 
