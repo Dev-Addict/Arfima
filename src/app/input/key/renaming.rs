@@ -15,7 +15,7 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
             (_, KeyCode::Left) => state.left(),
             (_, KeyCode::Right) => state.right(),
             (_, KeyCode::Home) => state.set_cursor_position(0),
-            (_, KeyCode::End) => state.set_cursor_position(state.buffer().len()),
+            (_, KeyCode::End) => state.set_cursor_position(state.buffer().chars().count()),
             _ => {
                 return false;
             }

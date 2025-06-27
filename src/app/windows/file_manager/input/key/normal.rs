@@ -89,14 +89,14 @@ pub fn handle(
             }
             (_, KeyCode::Char('a')) => {
                 let _ = event_tx.send(AppEvent::UpdateInputMode(InputMode::Adding {
-                    state: InputState::new("", 0),
+                    state: InputState::new(""),
                 }));
             }
             (_, KeyCode::Char('r')) => {
                 if let Some(entry) = window.entries.get(window.selected_index) {
                     let _ = event_tx.send(AppEvent::UpdateInputMode(InputMode::Renaming {
                         original: entry.name().into(),
-                        state: InputState::new(entry.name(), entry.name().len()),
+                        state: InputState::new(entry.name()),
                     }));
                 }
             }

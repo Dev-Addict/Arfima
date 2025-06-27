@@ -21,7 +21,7 @@ pub fn show_input_modal(title: &str, frame: &mut Frame, state: &InputState) {
     let mut spans = Vec::new();
 
     let cursor_position = state.cursor_position().min(state.buffer().len());
-    let (left, right) = state.buffer().split_at(cursor_position);
+    let (left, right) = state.buffer_split();
 
     spans.push(Span::raw(left));
     if cursor_position == state.buffer().len() {
