@@ -14,13 +14,11 @@ pub enum Error {
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::InvalidDirectoryPath(path) => write!(
-                f,
-                "The directory path provided is not a directory: {}",
-                path
-            ),
-            Self::Io(e) => write!(f, "IO error: {}", e),
-            Self::DirectoryEntry(e) => write!(f, "DirectoryEntry error: {}", e),
+            Self::InvalidDirectoryPath(path) => {
+                write!(f, "The directory path provided is not a directory: {path}")
+            }
+            Self::Io(e) => write!(f, "IO error: {e}"),
+            Self::DirectoryEntry(e) => write!(f, "DirectoryEntry error: {e}"),
             Self::IncorrentInputMode => write!(f, "Incorrect input mode"),
             Self::RenameBufferTypeMismatch => write!(f, "Rename buffer type mismatch"),
         }
