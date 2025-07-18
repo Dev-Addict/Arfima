@@ -1,10 +1,12 @@
 use crossterm::event::{KeyCode, KeyModifiers};
 
+use crate::app::Precommand;
+
 pub struct KeyBinding<'a> {
     name: &'a str,
     keys: &'a [(KeyModifiers, KeyCode)],
     description: &'a str,
-    count: bool,
+    precommand: Option<Precommand>,
 }
 
 impl<'a> KeyBinding<'a> {
@@ -13,20 +15,21 @@ impl<'a> KeyBinding<'a> {
             name,
             keys,
             description,
-            count: false,
+            precommand: None,
         }
     }
 
-    pub fn with_count(
+    pub fn with_precommand(
         name: &'a str,
         keys: &'a [(KeyModifiers, KeyCode)],
         description: &'a str,
+        precommand: Precommand,
     ) -> Self {
         Self {
             name,
             keys,
             description,
-            count: true,
+            precommand: Some(precommand),
         }
     }
 
@@ -42,7 +45,7 @@ impl<'a> KeyBinding<'a> {
         self.description
     }
 
-    pub fn count(&self) -> bool {
-        self.count
+    pub fn precommand(&self) -> Option<&Precommand> {
+        self.precommand.as_ref()
     }
 }

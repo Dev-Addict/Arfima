@@ -1,6 +1,11 @@
 use crossterm::event::{KeyCode, KeyModifiers};
 
-pub fn format_keybindings(bindings: &[(KeyModifiers, KeyCode)], count: bool) -> String {
+use crate::app::Precommand;
+
+pub fn format_keybindings(
+    bindings: &[(KeyModifiers, KeyCode)],
+    precommand: Option<&Precommand>,
+) -> String {
     bindings
         .iter()
         .map(|(modifiers, code)| {
@@ -38,9 +43,18 @@ pub fn format_keybindings(bindings: &[(KeyModifiers, KeyCode)], count: bool) -> 
                 _ => format!("{:?}", code),
             });
 
-            if count {
-                return format!("{{n}}{}", parts.join("+"));
+            if let Some(precommand) = precommand {
+                match precommand {
+                    Precommand::Repeat(_) => {
+                        return format!("{{n}}{}", parts.join("+"));
+                    }
+                    Precommand::Window => {
+                        return format!("Cnrtl+w {}", parts.join("+"));
+                    }
+                    Precommand::Leader => return format!("<leader> {}", parts.join("+")),
+                }
             }
+
             parts.join("+")
         })
         .collect::<Vec<_>>()

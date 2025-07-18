@@ -35,7 +35,7 @@ pub fn get_help_table<'a>(width: u16) -> Table<'a> {
             let (description_height, description) =
                 wrap_text(item.description(), description_width);
             let (keybindings_height, keybindings) =
-                wrap_text(&format_keybindings(item.keys(), item.count()), 16);
+                wrap_text(&format_keybindings(item.keys(), item.precommand()), 16);
 
             rows.push(
                 Row::new(vec![

@@ -2,9 +2,11 @@ use std::sync::LazyLock;
 
 use crossterm::event::{KeyCode, KeyModifiers};
 
+use crate::app::Precommand;
+
 use super::KeyBinding;
 
-pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 12]> = LazyLock::new(|| {
+pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 16]> = LazyLock::new(|| {
     [
         KeyBinding::new(
             "quit",
@@ -19,28 +21,30 @@ pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 12]> = LazyLock::new(|| {
             &[(KeyModifiers::NONE, KeyCode::Esc)],
             "Reset the normal mode",
         ),
-        KeyBinding::with_count(
+        KeyBinding::with_precommand(
             "navigate down",
             &[
                 (KeyModifiers::NONE, KeyCode::Down),
                 (KeyModifiers::NONE, KeyCode::Char('j')),
             ],
             "Move selection down",
+            Precommand::Repeat(0),
         ),
-        KeyBinding::with_count(
+        KeyBinding::with_precommand(
             "navigate up",
             &[
                 (KeyModifiers::NONE, KeyCode::Up),
                 (KeyModifiers::NONE, KeyCode::Char('k')),
             ],
             "Move selection up",
+            Precommand::Repeat(0),
         ),
         KeyBinding::new(
             "enter help mode",
             &[(KeyModifiers::CONTROL, KeyCode::Char('h'))],
             "Show help modal",
         ),
-        KeyBinding::with_count(
+        KeyBinding::with_precommand(
             "Go up",
             &[
                 (KeyModifiers::NONE, KeyCode::Left),
@@ -48,6 +52,7 @@ pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 12]> = LazyLock::new(|| {
                 (KeyModifiers::NONE, KeyCode::Backspace),
             ],
             "Navigate to parent directory",
+            Precommand::Repeat(0),
         ),
         KeyBinding::new(
             "open",
@@ -88,6 +93,37 @@ pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 12]> = LazyLock::new(|| {
                 (KeyModifiers::NONE, KeyCode::Char('G')),
             ],
             "Select last entry",
+        ),
+        KeyBinding::with_precommand(
+            "next window",
+            &[
+                (KeyModifiers::CONTROL, KeyCode::Char('w')),
+                (KeyModifiers::NONE, KeyCode::Char('j')),
+                (KeyModifiers::NONE, KeyCode::Right),
+            ],
+            "Iterate through windows to the next window",
+            Precommand::Window,
+        ),
+        KeyBinding::with_precommand(
+            "prev window",
+            &[
+                (KeyModifiers::NONE, KeyCode::Char('k')),
+                (KeyModifiers::NONE, KeyCode::Left),
+            ],
+            "Iterate through windows to the previous window",
+            Precommand::Window,
+        ),
+        KeyBinding::with_precommand(
+            "split horizontally",
+            &[(KeyModifiers::NONE, KeyCode::Char('h'))],
+            "Open a new window in a horizontal split",
+            Precommand::Window,
+        ),
+        KeyBinding::with_precommand(
+            "split vertically",
+            &[(KeyModifiers::NONE, KeyCode::Char('v'))],
+            "Open a new window in a verticall split",
+            Precommand::Window,
         ),
     ]
 });

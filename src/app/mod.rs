@@ -15,4 +15,5 @@ pub use app::App;
 pub use app_event::AppEvent;
 pub use error::Error;
 pub use input_mode::InputMode;
+pub use precommand::Precommand;
 pub use result::Result;
