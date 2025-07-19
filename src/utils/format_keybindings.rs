@@ -36,11 +36,11 @@ pub fn format_keybindings(
                 KeyCode::BackTab => "BackTab".into(),
                 KeyCode::Delete => "Del".into(),
                 KeyCode::Insert => "Ins".into(),
-                KeyCode::F(n) => format!("F{}", n),
+                KeyCode::F(n) => format!("F{n}"),
                 KeyCode::Char(c) => c.to_string(),
                 KeyCode::Null => "Null".into(),
                 KeyCode::Esc => "Esc".into(),
-                _ => format!("{:?}", code),
+                _ => format!("{code:?}"),
             });
 
             if let Some(precommand) = precommand {

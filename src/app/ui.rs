@@ -6,7 +6,7 @@ use ratatui::{
 use super::{
     App, InputMode,
     widgets::{
-        modals::{show_help_modal, show_input_modal, show_yes_no_modal},
+        modals::{show_help_modal, show_input_modal, show_opening_modal, show_yes_no_modal},
         render_error, render_instructions, render_precommand,
     },
 };
@@ -45,6 +45,13 @@ pub fn render_ui(app: &mut App, frame: &mut Frame) {
                 frame,
                 *removing_selected,
             );
+        }
+        InputMode::Opening {
+            apps,
+            path,
+            selected_index,
+        } => {
+            show_opening_modal(path, apps, frame, *selected_index);
         }
         InputMode::Help { selected_index } => {
             show_help_modal(frame, *selected_index);

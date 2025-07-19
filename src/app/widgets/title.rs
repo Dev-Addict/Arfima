@@ -13,7 +13,7 @@ pub fn get_title<'a>(path: String) -> impl Into<Title<'a>> {
 
     for directory in path[1..].split("/") {
         title_items.push(Span::styled(
-            format!(" {} ", directory),
+            format!(" {directory} "),
             Style::default().reversed(),
         ));
         title_items.push(Span::styled(
@@ -37,7 +37,7 @@ pub fn add_title_to_block<'a>(directory: &'a str, block: Block<'a>) -> Block<'a>
 
     for directory in directory[1..].split("/") {
         title_items.push(Span::styled(
-            format!(" {} ", directory),
+            format!(" {directory} "),
             Style::default().reversed(),
         ));
         title_items.push(Span::styled(

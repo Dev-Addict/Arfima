@@ -1,6 +1,6 @@
 use std::{fmt::Display, io};
 
-use crate::directory_entry;
+use crate::{directory_entry, utils::file::FileError};
 
 #[derive(Debug)]
 pub enum Error {
@@ -9,6 +9,7 @@ pub enum Error {
     DirectoryEntry(directory_entry::Error),
     IncorrentInputMode,
     RenameBufferTypeMismatch,
+    File(FileError),
 }
 
 impl Display for Error {
@@ -21,6 +22,7 @@ impl Display for Error {
             Self::DirectoryEntry(e) => write!(f, "DirectoryEntry error: {e}"),
             Self::IncorrentInputMode => write!(f, "Incorrect input mode"),
             Self::RenameBufferTypeMismatch => write!(f, "Rename buffer type mismatch"),
+            Self::File(e) => write!(f, "File error: {e}"),
         }
     }
 }
@@ -38,6 +40,15 @@ impl From<directory_entry::Error> for Error {
         match value {
             directory_entry::Error::Io(e) => Self::Io(e),
             _ => Self::DirectoryEntry(value),
+        }
+    }
+}
+
+impl From<FileError> for Error {
+    fn from(value: FileError) -> Self {
+        match value {
+            FileError::Io(e) => Self::Io(e),
+            _ => Self::File(value),
         }
     }
 }

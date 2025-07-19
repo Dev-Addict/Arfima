@@ -21,7 +21,7 @@ pub fn draw_entries_table(
             let (icon, color) = entry.icon();
 
             let icon = match color {
-                Some(color) => Span::styled(format!("{} ", icon), Style::default().fg(color)),
+                Some(color) => Span::styled(format!("{icon} "), Style::default().fg(color)),
                 None => Span::raw(icon),
             };
 

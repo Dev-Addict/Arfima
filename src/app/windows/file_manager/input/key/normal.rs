@@ -8,7 +8,7 @@ use crate::{
         windows::FileManagerWindow,
     },
     directory_entry::DirectoryEntryType,
-    utils::file::open_file,
+    utils::file::{FileError, get_opening_methods, open_file},
 };
 
 pub fn handle(
@@ -87,7 +87,32 @@ pub fn handle(
                     }
                 }
             }
-            (_, KeyCode::Char('o')) => {}
+            (_, KeyCode::Char('o')) => {
+                if let Some(entry) = window.entries.get(window.selected_index) {
+                    if *entry.entry_type() != DirectoryEntryType::Directory {
+                        match get_opening_methods(entry.path()) {
+                            Ok(apps) => {
+                                if apps.is_empty() {
+                                    let _ = event_tx.send(AppEvent::SetError(Some(
+                                        FileError::NoAppsFound.into(),
+                                    )));
+                                } else {
+                                    let _ = event_tx.send(AppEvent::UpdateInputMode(
+                                        InputMode::Opening {
+                                            apps,
+                                            path: entry.path().to_string_lossy().to_string(),
+                                            selected_index: 0,
+                                        },
+                                    ));
+                                }
+                            }
+                            Err(e) => {
+                                let _ = event_tx.send(AppEvent::SetError(Some(e.into())));
+                            }
+                        }
+                    }
+                }
+            }
             (_, KeyCode::Char('a')) => {
                 let _ = event_tx.send(AppEvent::UpdateInputMode(InputMode::Adding {
                     state: InputState::new(""),

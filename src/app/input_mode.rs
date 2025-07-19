@@ -18,6 +18,11 @@ pub enum InputMode {
         path: String,
         removing_selected: bool,
     },
+    Opening {
+        apps: Vec<String>,
+        path: String,
+        selected_index: usize,
+    },
     Help {
         selected_index: usize,
     },
@@ -58,6 +63,7 @@ impl Display for InputMode {
             Self::Adding { .. } => write!(f, "Adding"),
             Self::Renaming { .. } => write!(f, "Renaming"),
             Self::Removing { .. } => write!(f, "Removing"),
+            Self::Opening { .. } => write!(f, "Opening"),
             Self::Help { .. } => write!(f, "Help"),
         }
     }

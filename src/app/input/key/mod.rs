@@ -1,6 +1,7 @@
 mod adding;
 mod help;
 mod normal;
+mod opening;
 mod removing;
 mod renaming;
 
@@ -23,6 +24,9 @@ pub fn handle_key_event(app: &mut App, key: &KeyEvent) -> bool {
         return true;
     }
     if removing::handle(app, key) {
+        return true;
+    }
+    if opening::handle(app, key) {
         return true;
     }
     help::handle(app, key)
