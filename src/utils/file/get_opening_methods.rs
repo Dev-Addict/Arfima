@@ -16,6 +16,8 @@ pub fn get_opening_methods(path: &PathBuf) -> FileResult<Vec<String>> {
 
     #[cfg(target_os = "linux")]
     {
+        use std::collections::HashSet;
+
         let mime_type = {
             let output = Command::new("xdg-mime")
                 .arg("query")
@@ -40,6 +42,8 @@ pub fn get_opening_methods(path: &PathBuf) -> FileResult<Vec<String>> {
             .flat_map(|line| line.split_whitespace())
             .filter(|word| word.ends_with(".desktop"))
             .map(|s| s.to_string())
+            .collect::<HashSet<_>>()
+            .into_iter()
             .collect();
 
         return Ok(apps);

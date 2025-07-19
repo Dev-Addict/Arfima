@@ -8,7 +8,14 @@ use ratatui::{
 use crate::app::widgets::centered_rect::get_centered_rect;
 
 pub fn show_opening_modal(file: &str, apps: &[String], frame: &mut Frame, selected_index: usize) {
-    let area = get_centered_rect(40, 3, frame.area());
+    let area = get_centered_rect(
+        40,
+        (apps.len().saturating_add(2))
+            .try_into()
+            .unwrap_or(10)
+            .min(10),
+        frame.area(),
+    );
 
     let block = Block::default()
         .title(format!("Opening {file}"))
