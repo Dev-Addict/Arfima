@@ -63,15 +63,15 @@ impl DirectoryEntry {
 
     pub fn icon(&self) -> (String, Option<Color>) {
         match &self.entry_type {
-            DirectoryEntryType::Directory => ("📁".into(), None),
+            DirectoryEntryType::Directory => ("󰉋 ".into(), None),
             DirectoryEntryType::File { extension, size: _ } => match &extension {
                 Some(extension) => match get_icon_and_color(&extension.to_owned()) {
                     Some((icon, color)) => (icon, color),
-                    None => ("📄".into(), None),
+                    None => ("󰈙 ".into(), None),
                 },
-                None => ("📄".into(), None),
+                None => ("󰈙 ".into(), None),
             },
-            DirectoryEntryType::Other => ("".into(), None),
+            DirectoryEntryType::Other => (" ".into(), None),
         }
     }
 

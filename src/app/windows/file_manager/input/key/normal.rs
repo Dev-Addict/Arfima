@@ -87,6 +87,7 @@ pub fn handle(
                     }
                 }
             }
+            (_, KeyCode::Char('o')) => {}
             (_, KeyCode::Char('a')) => {
                 let _ = event_tx.send(AppEvent::UpdateInputMode(InputMode::Adding {
                     state: InputState::new(""),
