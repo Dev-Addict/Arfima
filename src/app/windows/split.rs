@@ -6,7 +6,10 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
 };
 
-use crate::app::{App, AppEvent, InputMode, Result, window::Window};
+use crate::app::{
+    App, AppEvent, InputMode, Result,
+    window::{Window, WindowSize},
+};
 
 use super::DummyWindow;
 
@@ -14,6 +17,7 @@ pub struct Split {
     direction: Direction,
     windows: Vec<Box<dyn Window>>,
     focused_index: usize,
+    window_size: WindowSize,
 }
 
 impl Split {
@@ -22,6 +26,19 @@ impl Split {
             direction,
             windows,
             focused_index: 0,
+            window_size: WindowSize::Default,
+        }
+    }
+    pub fn with_window_size(
+        direction: Direction,
+        windows: Vec<Box<dyn Window>>,
+        window_size: WindowSize,
+    ) -> Self {
+        Self {
+            direction,
+            windows,
+            focused_index: 0,
+            window_size,
         }
     }
 }
@@ -163,5 +180,37 @@ impl Window for Split {
         }
 
         Some(Box::new(this))
+    }
+
+    fn get_window_size(&self) -> &WindowSize {
+        &self.window_size
+    }
+
+    fn adjust_window_size(
+        &mut self,
+        direction: Direction,
+        adjustment: isize,
+        parent: Option<&Direction>,
+    ) -> bool {
+        if let Some(window) = self.windows.get_mut(self.focused_index) {
+            if window.adjust_window_size(direction, adjustment, Some(&self.direction)) {
+                return true;
+            }
+        }
+
+        if parent == Some(&direction) {
+            self.window_size = match self.window_size {
+                WindowSize::Default => WindowSize::Adjusted(adjustment),
+                WindowSize::DefaultSize(size) => WindowSize::AdjustedSize(size, adjustment),
+                WindowSize::Adjusted(prev) => WindowSize::Adjusted(prev.saturating_add(adjustment)),
+                WindowSize::AdjustedSize(size, prev) => {
+                    WindowSize::AdjustedSize(size, prev.saturating_add(adjustment))
+                }
+            };
+
+            return true;
+        }
+
+        false
     }
 }

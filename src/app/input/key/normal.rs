@@ -71,6 +71,50 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
 
                 return false;
             }
+            (_, KeyCode::Char('+')) => {
+                if let Some(Precommand::Window) = precommand {
+                    *precommand = None;
+
+                    app.adjust_window_size(Direction::Horizontal, 1);
+
+                    return true;
+                }
+
+                return false;
+            }
+            (_, KeyCode::Char('-')) => {
+                if let Some(Precommand::Window) = precommand {
+                    *precommand = None;
+
+                    app.adjust_window_size(Direction::Horizontal, -1);
+
+                    return true;
+                }
+
+                return false;
+            }
+            (_, KeyCode::Char('=')) => {
+                if let Some(Precommand::Window) = precommand {
+                    *precommand = None;
+
+                    app.adjust_window_size(Direction::Vertical, 1);
+
+                    return true;
+                }
+
+                return false;
+            }
+            (_, KeyCode::Char('_')) => {
+                if let Some(Precommand::Window) = precommand {
+                    *precommand = None;
+
+                    app.adjust_window_size(Direction::Vertical, -1);
+
+                    return true;
+                }
+
+                return false;
+            }
             (_, KeyCode::Char(c)) => {
                 if c.is_ascii_digit() {
                     let digit = c.to_digit(10).unwrap() as usize;

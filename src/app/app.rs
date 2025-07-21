@@ -1,7 +1,7 @@
 use std::sync::mpsc::{Receiver, Sender, channel};
 
 use crossterm::event::{self};
-use ratatui::DefaultTerminal;
+use ratatui::{DefaultTerminal, layout::Direction};
 
 use super::{
     AppEvent, Error, InputMode, Result,
@@ -107,5 +107,9 @@ impl App {
         } else {
             self.quit();
         }
+    }
+
+    pub fn adjust_window_size(&mut self, direction: Direction, adjustment: isize) {
+        self.window.adjust_window_size(direction, adjustment, None);
     }
 }

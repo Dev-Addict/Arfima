@@ -15,7 +15,7 @@ impl Display for Error {
             Self::MissingName => write!(f, "name is missing"),
             Self::MissingPath => write!(f, "path is missing"),
             Self::MissingEntryType => write!(f, "entry_type is missing"),
-            Self::Io(e) => write!(f, "IO error: {}", e),
+            Self::Io(e) => write!(f, "IO error: {e}"),
         }
     }
 }

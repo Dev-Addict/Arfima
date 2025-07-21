@@ -15,7 +15,7 @@ use crate::{
     app::{
         App, AppEvent, Error, InputMode, Result,
         widgets::{add_title_to_block, draw_entries_table},
-        window::Window,
+        window::{Window, WindowSize},
     },
     directory_entry::{DirectoryEntry, read_directory},
 };
@@ -27,6 +27,7 @@ pub struct FileManagerWindow {
     directory: String,
     entries: Vec<DirectoryEntry>,
     selected_index: usize,
+    window_size: WindowSize,
 }
 
 impl FileManagerWindow {
@@ -41,6 +42,7 @@ impl FileManagerWindow {
             directory: directory.into(),
             entries: read_directory(path)?,
             selected_index: 0,
+            window_size: WindowSize::Default,
         })
     }
 
@@ -95,16 +97,49 @@ impl Window for FileManagerWindow {
     }
 
     fn split(self: Box<Self>, direction: Direction) -> Box<dyn Window> {
-        Box::new(Split::new(
+        Box::new(Split::with_window_size(
             direction,
             vec![
                 Box::new(FileManagerWindow {
                     directory: self.directory.clone(),
                     entries: self.entries.clone(),
-                    selected_index: 0,
+                    selected_index: self.selected_index,
+                    window_size: WindowSize::Default,
                 }),
-                self,
+                Box::new(FileManagerWindow {
+                    directory: self.directory.clone(),
+                    entries: self.entries.clone(),
+                    selected_index: self.selected_index,
+                    window_size: WindowSize::Default,
+                }),
             ],
+            self.window_size,
         ))
+    }
+
+    fn get_window_size(&self) -> &WindowSize {
+        &self.window_size
+    }
+
+    fn adjust_window_size(
+        &mut self,
+        direction: Direction,
+        adjustment: isize,
+        parent: Option<&Direction>,
+    ) -> bool {
+        if parent == Some(&direction) {
+            self.window_size = match self.window_size {
+                WindowSize::Default => WindowSize::Adjusted(adjustment),
+                WindowSize::DefaultSize(size) => WindowSize::AdjustedSize(size, adjustment),
+                WindowSize::Adjusted(prev) => WindowSize::Adjusted(prev.saturating_add(adjustment)),
+                WindowSize::AdjustedSize(size, prev) => {
+                    WindowSize::AdjustedSize(size, prev.saturating_add(adjustment))
+                }
+            };
+
+            return true;
+        }
+
+        false
     }
 }
