@@ -6,7 +6,7 @@ use crate::app::Precommand;
 
 use super::KeyBinding;
 
-pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 16]> = LazyLock::new(|| {
+pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 20]> = LazyLock::new(|| {
     [
         KeyBinding::new(
             "quit",
@@ -114,15 +114,39 @@ pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 16]> = LazyLock::new(|| {
             Precommand::Window,
         ),
         KeyBinding::with_precommand(
-            "split horizontally",
+            "split h",
             &[(KeyModifiers::NONE, KeyCode::Char('h'))],
             "Open a new window in a horizontal split",
             Precommand::Window,
         ),
         KeyBinding::with_precommand(
-            "split vertically",
+            "split v",
             &[(KeyModifiers::NONE, KeyCode::Char('v'))],
             "Open a new window in a verticall split",
+            Precommand::Window,
+        ),
+        KeyBinding::with_precommand(
+            "inc win width",
+            &[(KeyModifiers::NONE, KeyCode::Char('+'))],
+            "Increase focused window size horizontally",
+            Precommand::Window,
+        ),
+        KeyBinding::with_precommand(
+            "dec win width",
+            &[(KeyModifiers::NONE, KeyCode::Char('-'))],
+            "Decrease focused window size horizontally",
+            Precommand::Window,
+        ),
+        KeyBinding::with_precommand(
+            "inc win height",
+            &[(KeyModifiers::NONE, KeyCode::Char('='))],
+            "Increase focused window size vertically",
+            Precommand::Window,
+        ),
+        KeyBinding::with_precommand(
+            "dec win height",
+            &[(KeyModifiers::NONE, KeyCode::Char('_'))],
+            "Decrease focused window size vertically",
             Precommand::Window,
         ),
     ]
