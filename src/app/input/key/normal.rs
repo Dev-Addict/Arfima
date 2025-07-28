@@ -75,7 +75,7 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                 if let Some(Precommand::Window) = precommand {
                     *precommand = None;
 
-                    app.adjust_window_size(Direction::Horizontal, 1);
+                    app.adjust_window_size(Direction::Horizontal, 2);
 
                     return true;
                 }
@@ -86,7 +86,7 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                 if let Some(Precommand::Window) = precommand {
                     *precommand = None;
 
-                    app.adjust_window_size(Direction::Horizontal, -1);
+                    app.adjust_window_size(Direction::Horizontal, -2);
 
                     return true;
                 }
@@ -97,7 +97,7 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                 if let Some(Precommand::Window) = precommand {
                     *precommand = None;
 
-                    app.adjust_window_size(Direction::Vertical, 1);
+                    app.adjust_window_size(Direction::Vertical, 2);
 
                     return true;
                 }
@@ -108,7 +108,7 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                 if let Some(Precommand::Window) = precommand {
                     *precommand = None;
 
-                    app.adjust_window_size(Direction::Vertical, -1);
+                    app.adjust_window_size(Direction::Vertical, -2);
 
                     return true;
                 }
