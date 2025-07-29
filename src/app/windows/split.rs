@@ -286,25 +286,41 @@ impl Window for Split {
         &mut self,
         direction: Direction,
         adjustment: isize,
-        parent: Option<&Direction>,
+        parent: Option<(&Direction, usize)>,
     ) -> bool {
+        let windows_len = self.windows.len();
+
         if let Some(window) = self.windows.get_mut(self.focused_index) {
-            if window.adjust_window_size(direction, adjustment, Some(&self.direction)) {
+            if window.adjust_window_size(
+                direction,
+                adjustment,
+                Some((&self.direction, windows_len)),
+            ) {
                 return true;
             }
         }
 
-        if parent == Some(&direction) {
-            self.window_size = match self.window_size {
-                WindowSize::Default => WindowSize::Adjusted(adjustment),
-                WindowSize::DefaultSize(size) => WindowSize::AdjustedSize(size, adjustment),
-                WindowSize::Adjusted(prev) => WindowSize::Adjusted(prev.saturating_add(adjustment)),
-                WindowSize::AdjustedSize(size, prev) => {
-                    WindowSize::AdjustedSize(size, prev.saturating_add(adjustment))
-                }
-            };
+        if let Some((d, windows)) = parent {
+            if d == &direction {
+                self.window_size = match self.window_size {
+                    WindowSize::Default => {
+                        WindowSize::Adjusted(adjustment.saturating_mul(windows.cast_signed()))
+                    }
+                    WindowSize::DefaultSize(size) => WindowSize::AdjustedSize(
+                        size,
+                        adjustment.saturating_mul(windows.cast_signed()),
+                    ),
+                    WindowSize::Adjusted(prev) => WindowSize::Adjusted(
+                        prev.saturating_add(adjustment.saturating_mul(windows.cast_signed())),
+                    ),
+                    WindowSize::AdjustedSize(size, prev) => WindowSize::AdjustedSize(
+                        size,
+                        prev.saturating_add(adjustment.saturating_mul(windows.cast_signed())),
+                    ),
+                };
 
-            return true;
+                return true;
+            }
         }
 
         false

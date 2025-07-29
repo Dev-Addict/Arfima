@@ -123,19 +123,29 @@ impl Window for FileManagerWindow {
         &mut self,
         direction: Direction,
         adjustment: isize,
-        parent: Option<&Direction>,
+        parent: Option<(&Direction, usize)>,
     ) -> bool {
-        if parent == Some(&direction) {
-            self.window_size = match self.window_size {
-                WindowSize::Default => WindowSize::Adjusted(adjustment),
-                WindowSize::DefaultSize(size) => WindowSize::AdjustedSize(size, adjustment),
-                WindowSize::Adjusted(prev) => WindowSize::Adjusted(prev.saturating_add(adjustment)),
-                WindowSize::AdjustedSize(size, prev) => {
-                    WindowSize::AdjustedSize(size, prev.saturating_add(adjustment))
-                }
-            };
+        if let Some((d, windows)) = parent {
+            if d == &direction {
+                self.window_size = match self.window_size {
+                    WindowSize::Default => {
+                        WindowSize::Adjusted(adjustment.saturating_mul(windows.cast_signed()))
+                    }
+                    WindowSize::DefaultSize(size) => WindowSize::AdjustedSize(
+                        size,
+                        adjustment.saturating_mul(windows.cast_signed()),
+                    ),
+                    WindowSize::Adjusted(prev) => WindowSize::Adjusted(
+                        prev.saturating_add(adjustment.saturating_mul(windows.cast_signed())),
+                    ),
+                    WindowSize::AdjustedSize(size, prev) => WindowSize::AdjustedSize(
+                        size,
+                        prev.saturating_add(adjustment.saturating_mul(windows.cast_signed())),
+                    ),
+                };
 
-            return true;
+                return true;
+            }
         }
 
         false

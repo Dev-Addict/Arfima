@@ -1,7 +1,6 @@
+use crate::app::{App, InputMode, precommand::Precommand, windows::DummyWindow};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::layout::Direction;
-
-use crate::app::{App, InputMode, precommand::Precommand, windows::DummyWindow};
 
 pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
     if let InputMode::Normal { precommand } = &mut app.input_mode {
@@ -91,7 +90,7 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                     let count = count.cast_signed();
                     *precommand = None;
 
-                    app.adjust_window_size(Direction::Horizontal, 2 * count);
+                    app.adjust_window_size(Direction::Horizontal, count);
 
                     return true;
                 }
@@ -103,7 +102,7 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                     let count = count.cast_signed();
                     *precommand = None;
 
-                    app.adjust_window_size(Direction::Horizontal, -2 * count);
+                    app.adjust_window_size(Direction::Horizontal, -count);
 
                     return true;
                 }
@@ -115,7 +114,7 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                     let count = count.cast_signed();
                     *precommand = None;
 
-                    app.adjust_window_size(Direction::Vertical, 2 * count);
+                    app.adjust_window_size(Direction::Vertical, count);
 
                     return true;
                 }
@@ -127,7 +126,7 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                     let count = count.cast_signed();
                     *precommand = None;
 
-                    app.adjust_window_size(Direction::Vertical, -2 * count);
+                    app.adjust_window_size(Direction::Vertical, -count);
 
                     return true;
                 }

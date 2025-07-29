@@ -66,7 +66,7 @@ pub trait Window {
         &mut self,
         _direction: Direction,
         _adjustment: isize,
-        _parent: Option<&Direction>,
+        _parent: Option<(&Direction, usize)>,
     ) -> bool {
         false
     }
