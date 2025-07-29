@@ -96,23 +96,21 @@ impl Window for FileManagerWindow {
         Ok(())
     }
 
-    fn split(self: Box<Self>, direction: Direction) -> Box<dyn Window> {
+    fn split(self: Box<Self>, direction: Direction, count: usize) -> Box<dyn Window> {
+        let mut windows: Vec<Box<dyn Window>> = Vec::with_capacity(count.max(1));
+
+        for _ in 0..count {
+            windows.push(Box::new(FileManagerWindow {
+                directory: self.directory.clone(),
+                entries: self.entries.clone(),
+                selected_index: self.selected_index,
+                window_size: WindowSize::Default,
+            }));
+        }
+
         Box::new(Split::with_window_size(
             direction,
-            vec![
-                Box::new(FileManagerWindow {
-                    directory: self.directory.clone(),
-                    entries: self.entries.clone(),
-                    selected_index: self.selected_index,
-                    window_size: WindowSize::Default,
-                }),
-                Box::new(FileManagerWindow {
-                    directory: self.directory.clone(),
-                    entries: self.entries.clone(),
-                    selected_index: self.selected_index,
-                    window_size: WindowSize::Default,
-                }),
-            ],
+            windows,
             self.window_size,
         ))
     }

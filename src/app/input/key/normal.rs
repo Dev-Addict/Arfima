@@ -16,21 +16,29 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
             (KeyModifiers::CONTROL, KeyCode::Char('h')) => {
                 app.input_mode = InputMode::Help { selected_index: 0 };
             }
-            (KeyModifiers::CONTROL, KeyCode::Char('w')) => {
-                if let Some(Precommand::Window) = precommand {
+            (KeyModifiers::CONTROL, KeyCode::Char('w')) => match precommand {
+                Some(Precommand::RepeatWindow(count)) => {
+                    let count = *count;
                     *precommand = None;
-
-                    app.next_window();
-                } else {
-                    *precommand = Some(Precommand::Window);
+                    for _ in 0..count {
+                        app.next_window();
+                    }
                 }
-            }
+                Some(Precommand::Repeat(count)) => {
+                    let count = *count;
+                    *precommand = Some(Precommand::RepeatWindow(count));
+                }
+                _ => {
+                    *precommand = Some(Precommand::RepeatWindow(1));
+                }
+            },
             (_, KeyCode::Char('h')) => {
-                if let Some(Precommand::Window) = precommand {
+                if let Some(Precommand::RepeatWindow(count)) = precommand {
+                    let count = (*count).max(2);
                     *precommand = None;
 
                     let window = std::mem::replace(&mut app.window, Box::new(DummyWindow));
-                    app.window = window.split(Direction::Horizontal);
+                    app.window = window.split(Direction::Horizontal, count);
 
                     return true;
                 }
@@ -38,11 +46,12 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                 return false;
             }
             (_, KeyCode::Char('v')) => {
-                if let Some(Precommand::Window) = precommand {
+                if let Some(Precommand::RepeatWindow(count)) = precommand {
+                    let count = (*count).max(2);
                     *precommand = None;
 
                     let window = std::mem::replace(&mut app.window, Box::new(DummyWindow));
-                    app.window = window.split(Direction::Vertical);
+                    app.window = window.split(Direction::Vertical, count);
 
                     return true;
                 }
@@ -50,10 +59,13 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                 return false;
             }
             (_, KeyCode::Right | KeyCode::Char('j')) => {
-                if let Some(Precommand::Window) = precommand {
+                if let Some(Precommand::RepeatWindow(count)) = precommand {
+                    let count = *count;
                     *precommand = None;
 
-                    app.next_window();
+                    for _ in 0..count {
+                        app.next_window();
+                    }
 
                     return true;
                 }
@@ -61,10 +73,13 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                 return false;
             }
             (_, KeyCode::Left | KeyCode::Char('k')) => {
-                if let Some(Precommand::Window) = precommand {
+                if let Some(Precommand::RepeatWindow(count)) = precommand {
+                    let count = *count;
                     *precommand = None;
 
-                    app.prev_window();
+                    for _ in 0..count {
+                        app.prev_window();
+                    }
 
                     return true;
                 }
@@ -72,10 +87,11 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                 return false;
             }
             (_, KeyCode::Char('+')) => {
-                if let Some(Precommand::Window) = precommand {
+                if let Some(Precommand::RepeatWindow(count)) = precommand {
+                    let count = count.cast_signed();
                     *precommand = None;
 
-                    app.adjust_window_size(Direction::Horizontal, 2);
+                    app.adjust_window_size(Direction::Horizontal, 2 * count);
 
                     return true;
                 }
@@ -83,10 +99,11 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                 return false;
             }
             (_, KeyCode::Char('-')) => {
-                if let Some(Precommand::Window) = precommand {
+                if let Some(Precommand::RepeatWindow(count)) = precommand {
+                    let count = count.cast_signed();
                     *precommand = None;
 
-                    app.adjust_window_size(Direction::Horizontal, -2);
+                    app.adjust_window_size(Direction::Horizontal, -2 * count);
 
                     return true;
                 }
@@ -94,10 +111,11 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                 return false;
             }
             (_, KeyCode::Char('=')) => {
-                if let Some(Precommand::Window) = precommand {
+                if let Some(Precommand::RepeatWindow(count)) = precommand {
+                    let count = count.cast_signed();
                     *precommand = None;
 
-                    app.adjust_window_size(Direction::Vertical, 2);
+                    app.adjust_window_size(Direction::Vertical, 2 * count);
 
                     return true;
                 }
@@ -105,10 +123,11 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                 return false;
             }
             (_, KeyCode::Char('_')) => {
-                if let Some(Precommand::Window) = precommand {
+                if let Some(Precommand::RepeatWindow(count)) = precommand {
+                    let count = count.cast_signed();
                     *precommand = None;
 
-                    app.adjust_window_size(Direction::Vertical, -2);
+                    app.adjust_window_size(Direction::Vertical, -2 * count);
 
                     return true;
                 }

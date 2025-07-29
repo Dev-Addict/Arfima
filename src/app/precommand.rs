@@ -2,5 +2,5 @@
 pub enum Precommand {
     Leader,
     Repeat(usize),
-    Window,
+    RepeatWindow(usize),
 }

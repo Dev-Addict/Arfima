@@ -48,8 +48,8 @@ pub fn format_keybindings(
                     Precommand::Repeat(_) => {
                         return format!("{{n}}{}", parts.join("+"));
                     }
-                    Precommand::Window => {
-                        return format!("Cnrtl+w {}", parts.join("+"));
+                    Precommand::RepeatWindow(_) => {
+                        return format!("{{n}}Cnrtl+w {}", parts.join("+"));
                     }
                     Precommand::Leader => return format!("<leader> {}", parts.join("+")),
                 }

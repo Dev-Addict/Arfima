@@ -22,7 +22,7 @@ impl Window for DummyWindow {
     ) -> bool {
         false
     }
-    fn split(self: Box<Self>, _: Direction) -> Box<dyn Window> {
+    fn split(self: Box<Self>, _: Direction, _: usize) -> Box<dyn Window> {
         self
     }
 }

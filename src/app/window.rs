@@ -34,7 +34,7 @@ pub trait Window {
         event_tx: &Sender<AppEvent>,
         handled: bool,
     ) -> bool;
-    fn split(self: Box<Self>, direction: Direction) -> Box<dyn Window>;
+    fn split(self: Box<Self>, direction: Direction, count: usize) -> Box<dyn Window>;
 
     fn reset(&mut self) -> Result<()> {
         Ok(())

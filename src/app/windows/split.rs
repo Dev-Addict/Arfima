@@ -182,12 +182,12 @@ impl Window for Split {
         Ok(())
     }
 
-    fn split(self: Box<Self>, direction: Direction) -> Box<dyn Window> {
+    fn split(self: Box<Self>, direction: Direction, count: usize) -> Box<dyn Window> {
         let mut this = *self;
 
         if let Some(window) = this.windows.get_mut(this.focused_index) {
             let focused_window = std::mem::replace(window, Box::new(DummyWindow));
-            *window = focused_window.split(direction);
+            *window = focused_window.split(direction, count);
         }
 
         Box::new(this)
