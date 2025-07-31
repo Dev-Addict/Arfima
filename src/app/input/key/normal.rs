@@ -1,4 +1,6 @@
-use crate::app::{App, InputMode, precommand::Precommand, windows::DummyWindow};
+use crate::app::{
+    App, InputMode, precommand::Precommand, widgets::types::InputState, windows::DummyWindow,
+};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::layout::Direction;
 
@@ -132,6 +134,11 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                 }
 
                 return false;
+            }
+            (_, KeyCode::Char(':')) => {
+                app.input_mode = InputMode::Commanding {
+                    state: InputState::default(),
+                };
             }
             (_, KeyCode::Char(c)) => {
                 if c.is_ascii_digit() {

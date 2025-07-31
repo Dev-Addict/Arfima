@@ -3,6 +3,8 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
 };
 
+use crate::app::widgets::render_command;
+
 use super::{
     App, InputMode,
     widgets::{
@@ -24,6 +26,8 @@ pub fn render_ui(app: &mut App, frame: &mut Frame) {
     } = &app.input_mode
     {
         render_precommand(frame, layout[1], precommand);
+    } else if let InputMode::Commanding { state } = &app.input_mode {
+        render_command(frame, layout[1], state);
     } else if let Some(e) = &app.error {
         render_error(frame, layout[1], e);
     } else {

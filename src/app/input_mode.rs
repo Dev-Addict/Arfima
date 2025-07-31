@@ -23,6 +23,9 @@ pub enum InputMode {
         path: String,
         selected_index: usize,
     },
+    Commanding {
+        state: InputState,
+    },
     Help {
         selected_index: usize,
     },
@@ -64,6 +67,7 @@ impl Display for InputMode {
             Self::Renaming { .. } => write!(f, "Renaming"),
             Self::Removing { .. } => write!(f, "Removing"),
             Self::Opening { .. } => write!(f, "Opening"),
+            Self::Commanding { .. } => write!(f, "Commanding"),
             Self::Help { .. } => write!(f, "Help"),
         }
     }

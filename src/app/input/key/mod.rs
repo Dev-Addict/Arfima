@@ -1,4 +1,5 @@
 mod adding;
+mod commanding;
 mod help;
 mod normal;
 mod opening;
@@ -27,6 +28,9 @@ pub fn handle_key_event(app: &mut App, key: &KeyEvent) -> bool {
         return true;
     }
     if opening::handle(app, key) {
+        return true;
+    }
+    if commanding::handle(app, key) {
         return true;
     }
     help::handle(app, key)
