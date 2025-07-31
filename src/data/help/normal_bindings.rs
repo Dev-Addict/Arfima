@@ -6,7 +6,7 @@ use crate::app::Precommand;
 
 use super::KeyBinding;
 
-pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 20]> = LazyLock::new(|| {
+pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 21]> = LazyLock::new(|| {
     [
         KeyBinding::new(
             "quit",
@@ -85,6 +85,12 @@ pub static NORMAL_BINDINGS: LazyLock<[KeyBinding; 20]> = LazyLock::new(|| {
                 (KeyModifiers::NONE, KeyCode::Char('g')),
             ],
             "Select first entry",
+        ),
+        KeyBinding::with_precommand(
+            "jump to {n}",
+            &[(KeyModifiers::NONE, KeyCode::Char('g'))],
+            "Jump to the nth entry",
+            Precommand::Repeat(0),
         ),
         KeyBinding::new(
             "jump to bottom",

@@ -134,7 +134,15 @@ pub fn handle(
                     }));
                 }
             }
-            (_, KeyCode::Home | KeyCode::Char('g')) => window.selected_index = 0,
+            (_, KeyCode::Home | KeyCode::Char('g')) => {
+                if let Some(Precommand::Repeat(repeat)) = precommand {
+                    window.selected_index = (*repeat - 1).min(window.entries.len() - 1).max(1);
+
+                    let _ = event_tx.send(AppEvent::UpdatePrecommand(None));
+                } else {
+                    window.selected_index = 0;
+                }
+            }
             (_, KeyCode::End | KeyCode::Char('G')) => {
                 window.selected_index = window.entries.len().saturating_sub(1)
             }
