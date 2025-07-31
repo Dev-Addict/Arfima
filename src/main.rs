@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 mod app;
+mod config;
 mod data;
 mod directory_entry;
 mod types;
@@ -8,7 +9,7 @@ mod utils;
 
 use std::{env, path::PathBuf};
 
-use crate::app::App;
+use crate::{app::App, config::Config};
 
 fn main() -> color_eyre::Result<()> {
     let directory = match env::args().nth(1) {
@@ -30,8 +31,10 @@ fn main() -> color_eyre::Result<()> {
 
     color_eyre::install()?;
 
+    let config = Config::default();
+
     let terminal = ratatui::init();
-    let (app, tx) = App::new(directory.to_string_lossy().as_ref())?;
+    let (app, tx) = App::new(directory.to_string_lossy().as_ref(), config)?;
     let result = app.run(terminal, &tx);
 
     ratatui::restore();

@@ -62,7 +62,7 @@ impl FileManagerWindow {
 }
 
 impl Window for FileManagerWindow {
-    fn render(&self, _: &App, frame: &mut Frame, area: Rect, focused: bool) {
+    fn render(&self, app: &App, frame: &mut Frame, area: Rect, focused: bool) {
         let mut block = Block::bordered();
 
         if focused {
@@ -71,7 +71,14 @@ impl Window for FileManagerWindow {
 
         block = add_title_to_block(&self.directory, block);
 
-        draw_entries_table(frame, area, &self.entries, self.selected_index, block);
+        draw_entries_table(
+            frame,
+            area,
+            &self.entries,
+            self.selected_index,
+            block,
+            &app.config,
+        );
     }
 
     fn handle_event(

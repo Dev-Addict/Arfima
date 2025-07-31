@@ -6,7 +6,7 @@ use ratatui::{
     widgets::{Block, Cell, Row, Table, TableState},
 };
 
-use crate::directory_entry::DirectoryEntry;
+use crate::{config::Config, directory_entry::DirectoryEntry};
 
 pub fn draw_entries_table(
     frame: &mut Frame,
@@ -14,10 +14,14 @@ pub fn draw_entries_table(
     entries: &[DirectoryEntry],
     selected_index: usize,
     block: Block,
+    config: &Config,
 ) {
+    let entries_len_digits = entries.len().checked_ilog10().unwrap_or(0) + 1;
+
     let rows: Vec<Row> = entries
         .iter()
-        .map(|entry| {
+        .enumerate()
+        .map(|(i, entry)| {
             let (icon, color) = entry.icon();
 
             let icon = match color {
@@ -25,7 +29,22 @@ pub fn draw_entries_table(
                 None => Span::raw(icon),
             };
 
-            let mut cells = vec![Cell::from(icon), Cell::from(entry.name())];
+            let mut cells = vec![];
+
+            if config.number().active() {
+                cells.push(Cell::from(format!(
+                    "{}{} ",
+                    " ".repeat(
+                        (entries_len_digits - ((i + 1).checked_ilog10().unwrap_or(0) + 1))
+                            .try_into()
+                            .unwrap_or(0)
+                    ),
+                    i + 1
+                )))
+            }
+
+            cells.push(Cell::from(icon));
+            cells.push(Cell::from(entry.name()));
 
             if area.width >= 36 {
                 cells.push(Cell::from(entry.formatted_size().unwrap_or_default()));
@@ -39,8 +58,21 @@ pub fn draw_entries_table(
         })
         .collect();
 
-    let mut widths = vec![Constraint::Length(2), Constraint::Fill(1)];
-    let mut headers = vec!["", "Name"];
+    let mut widths = vec![];
+    let mut headers = vec![];
+
+    if config.number().active() {
+        widths.push(Constraint::Length(
+            (entries_len_digits + 1).try_into().unwrap_or(3),
+        ));
+        headers.push("");
+    }
+
+    widths.push(Constraint::Length(2));
+    headers.push("");
+
+    widths.push(Constraint::Fill(1));
+    headers.push("Name");
 
     if area.width >= 36 {
         widths.push(Constraint::Min(6));

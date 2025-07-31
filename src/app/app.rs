@@ -3,6 +3,8 @@ use std::sync::mpsc::{Receiver, Sender, channel};
 use crossterm::event::{self};
 use ratatui::{DefaultTerminal, layout::Direction};
 
+use crate::config::Config;
+
 use super::{
     AppEvent, Error, InputMode, Result,
     input::handle_event,
@@ -16,11 +18,12 @@ pub struct App {
     pub input_mode: InputMode,
     pub error: Option<Error>,
     pub window: Box<dyn Window>,
+    pub config: Config,
     event_rx: Receiver<AppEvent>,
 }
 
 impl App {
-    pub fn new(directory: &str) -> Result<(Self, Sender<AppEvent>)> {
+    pub fn new(directory: &str, config: Config) -> Result<(Self, Sender<AppEvent>)> {
         let (tx, rx) = channel();
 
         Ok((
@@ -29,6 +32,7 @@ impl App {
                 input_mode: InputMode::Normal { precommand: None },
                 error: None,
                 window: Box::new(FileManagerWindow::new(directory)?),
+                config,
                 event_rx: rx,
             },
             tx,
