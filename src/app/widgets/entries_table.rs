@@ -33,7 +33,7 @@ pub fn draw_entries_table(
 
             if config.number().active() {
                 cells.push(Cell::from(format!(
-                    "{}{} ",
+                    "{}{}",
                     " ".repeat(
                         (entries_len_digits - ((i + 1).checked_ilog10().unwrap_or(0) + 1))
                             .try_into()
@@ -63,7 +63,7 @@ pub fn draw_entries_table(
 
     if config.number().active() {
         widths.push(Constraint::Length(
-            (entries_len_digits + 1).try_into().unwrap_or(3),
+            entries_len_digits.try_into().unwrap_or(3),
         ));
         headers.push("");
     }
