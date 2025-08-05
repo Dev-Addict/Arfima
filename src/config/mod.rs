@@ -17,8 +17,16 @@ impl NumberConfig {
         self.active
     }
 
+    pub fn set_active(&mut self, active: bool) {
+        self.active = active;
+    }
+
     pub fn relative(&self) -> bool {
         self.relative
+    }
+
+    pub fn set_relative(&mut self, relative: bool) {
+        self.relative = relative;
     }
 }
 
@@ -30,6 +38,10 @@ pub struct Config {
 impl Config {
     pub fn number(&self) -> &NumberConfig {
         &self.number
+    }
+
+    pub fn mut_number(&mut self) -> &mut NumberConfig {
+        &mut self.number
     }
 }
 
