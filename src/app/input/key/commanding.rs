@@ -8,7 +8,6 @@ use crate::{
     },
 };
 
-// TODO: Implement Enter Key to execute the command
 // TODO: Add History for commands
 
 pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
@@ -56,6 +55,8 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                                 }
                             },
                         }
+
+                        app.error = None;
                     }
                     Err(e) => app.error = Some(e.into()),
                 };

@@ -32,14 +32,24 @@ pub fn draw_entries_table(
             let mut cells = vec![];
 
             if config.number().active() {
+                let num = if config.number().relative() {
+                    if i == selected_index {
+                        i + 1
+                    } else {
+                        i.abs_diff(selected_index)
+                    }
+                } else {
+                    i + 1
+                };
+
                 cells.push(Cell::from(format!(
                     "{}{}",
                     " ".repeat(
-                        (entries_len_digits - ((i + 1).checked_ilog10().unwrap_or(0) + 1))
+                        (entries_len_digits - (num.checked_ilog10().unwrap_or(0) + 1))
                             .try_into()
                             .unwrap_or(0)
                     ),
-                    i + 1
+                    num
                 )))
             }
 
