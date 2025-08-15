@@ -8,9 +8,6 @@ use nom::{
     combinator::{map, opt},
 };
 
-// TODO: Restructure command
-// TODO: handle commands such as q and qa
-
 #[derive(Debug)]
 pub enum Error {
     FailedToParseError(nom::Err<nom::error::Error<String>>),
@@ -37,6 +34,21 @@ pub enum SetCommand {
     Enable(OptionName),
     Disable(OptionName),
     Toggle(OptionName),
+}
+
+pub struct QuitCommand {
+    all: bool,
+}
+
+impl QuitCommand {
+    pub fn all(&self) -> bool {
+        self.all
+    }
+}
+
+pub enum Command {
+    Set(SetCommand),
+    Quit(QuitCommand),
 }
 
 fn parse_option_name(input: &str) -> IResult<&str, OptionName> {
@@ -71,8 +83,24 @@ fn parse_set_command(input: &str) -> IResult<&str, SetCommand> {
     Ok((input, command))
 }
 
-pub fn parse_command(input: &str) -> Result<SetCommand> {
-    match parse_set_command(input) {
+fn parse_quit_command(input: &str) -> IResult<&str, QuitCommand> {
+    alt((
+        map(alt((tag("q"), tag("quit"))), |_| QuitCommand { all: false }),
+        map(alt((tag("qa"), tag("quitall"))), |_| QuitCommand {
+            all: true,
+        }),
+    ))(input)
+}
+
+fn parse_any_command(input: &str) -> IResult<&str, Command> {
+    alt((
+        map(parse_set_command, Command::Set),
+        map(parse_quit_command, Command::Quit),
+    ))(input)
+}
+
+pub fn parse_command(input: &str) -> Result<Command> {
+    match parse_any_command(input) {
         Ok((_, command)) => Ok(command),
         Err(e) => Err(Error::FailedToParseError(e.to_owned())),
     }

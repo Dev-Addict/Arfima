@@ -4,7 +4,7 @@ use crate::{
     app::{App, InputMode},
     utils::{
         parse_command,
-        process_command::{OptionName, SetCommand},
+        process_command::{Command, OptionName, SetCommand},
     },
 };
 
@@ -32,32 +32,41 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                 }
 
                 match parse_command(state.buffer()) {
-                    Ok(command) => {
-                        let active = match command {
-                            SetCommand::Enable(_) => true,
-                            SetCommand::Disable(_) => false,
-                            SetCommand::Toggle(_) => !app.config.number().active(),
-                        };
+                    Ok(command) => match command {
+                        Command::Set(command) => {
+                            let active = match command {
+                                SetCommand::Enable(_) => true,
+                                SetCommand::Disable(_) => false,
+                                SetCommand::Toggle(_) => !app.config.number().active(),
+                            };
 
-                        match command {
-                            SetCommand::Enable(option)
-                            | SetCommand::Disable(option)
-                            | SetCommand::Toggle(option) => match option {
-                                OptionName::Number => {
-                                    app.config.mut_number().set_active(active);
-                                }
-                                OptionName::RelativeNumber => {
-                                    app.config.mut_number().set_relative(active);
-
-                                    if active {
-                                        app.config.mut_number().set_active(true);
+                            match command {
+                                SetCommand::Enable(option)
+                                | SetCommand::Disable(option)
+                                | SetCommand::Toggle(option) => match option {
+                                    OptionName::Number => {
+                                        app.config.mut_number().set_active(active);
                                     }
-                                }
-                            },
-                        }
+                                    OptionName::RelativeNumber => {
+                                        app.config.mut_number().set_relative(active);
 
-                        app.error = None;
-                    }
+                                        if active {
+                                            app.config.mut_number().set_active(true);
+                                        }
+                                    }
+                                },
+                            }
+
+                            app.error = None;
+                        }
+                        Command::Quit(command) => {
+                            if command.all() {
+                                app.quit();
+                            } else {
+                                app.quit_focused_window();
+                            }
+                        }
+                    },
                     Err(e) => app.error = Some(e.into()),
                 };
 
