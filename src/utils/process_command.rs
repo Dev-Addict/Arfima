@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+// TODO: restructure into a more organized format
+
 use nom::{
     IResult,
     branch::alt,
@@ -85,10 +87,10 @@ fn parse_set_command(input: &str) -> IResult<&str, SetCommand> {
 
 fn parse_quit_command(input: &str) -> IResult<&str, QuitCommand> {
     alt((
-        map(alt((tag("q"), tag("quit"))), |_| QuitCommand { all: false }),
         map(alt((tag("qa"), tag("quitall"))), |_| QuitCommand {
             all: true,
         }),
+        map(alt((tag("q"), tag("quit"))), |_| QuitCommand { all: false }),
     ))(input)
 }
 
