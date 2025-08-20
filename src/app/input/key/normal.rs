@@ -138,6 +138,8 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
             (_, KeyCode::Char(':')) => {
                 app.input_mode = InputMode::Commanding {
                     state: InputState::default(),
+                    current_command: 0,
+                    return_state: None,
                 };
             }
             (_, KeyCode::Char(c)) => {

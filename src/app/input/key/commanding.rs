@@ -1,17 +1,20 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{
-    app::{App, InputMode},
+    app::{App, InputMode, widgets::types::InputState},
     utils::{
         parse_command,
         process_command::{Command, OptionName, SetCommand},
     },
 };
 
-// TODO: Add History for commands
-
 pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
-    if let InputMode::Commanding { state } = &mut app.input_mode {
+    if let InputMode::Commanding {
+        state,
+        current_command,
+        return_state,
+    } = &mut app.input_mode
+    {
         match (key.modifiers, key.code) {
             (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => app.quit(),
             (_, KeyCode::Esc) => {
@@ -22,6 +25,42 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
             (_, KeyCode::Backspace) => state.remove_char(),
             (_, KeyCode::Left) => state.left(),
             (_, KeyCode::Right) => state.right(),
+            (_, KeyCode::Up | KeyCode::Down) => {
+                let diff = if key.code == KeyCode::Up { -1 } else { 1 };
+
+                if *current_command == 0 {
+                    if diff == 1 {
+                        return true;
+                    }
+                    *return_state = Some(state.clone());
+
+                    *current_command += diff;
+
+                    if let Some(buffer) = app.command_history.get_from_current(*current_command) {
+                        *state = InputState::new(buffer);
+                    } else {
+                        *current_command -= diff;
+                    }
+                } else {
+                    *current_command += diff;
+
+                    if *current_command == 0 {
+                        *state = if let Some(input_state) = return_state {
+                            input_state.clone()
+                        } else {
+                            InputState::new("")
+                        };
+
+                        *return_state = None;
+                    } else if let Some(buffer) =
+                        app.command_history.get_from_current(*current_command)
+                    {
+                        *state = InputState::new(buffer);
+                    } else {
+                        *current_command -= diff;
+                    }
+                }
+            }
             (_, KeyCode::Home) => state.set_cursor_position(0),
             (_, KeyCode::End) => state.set_cursor_position(state.buffer().len()),
             (_, KeyCode::Enter) => {
@@ -30,6 +69,8 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
 
                     return true;
                 }
+
+                app.command_history.push(state.buffer().to_string());
 
                 match parse_command(state.buffer()) {
                     Ok(command) => match command {

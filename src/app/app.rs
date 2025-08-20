@@ -3,7 +3,7 @@ use std::sync::mpsc::{Receiver, Sender, channel};
 use crossterm::event::{self};
 use ratatui::{DefaultTerminal, layout::Direction};
 
-use crate::config::Config;
+use crate::{config::Config, types::CircularBuffer};
 
 use super::{
     AppEvent, Error, InputMode, Result,
@@ -13,12 +13,15 @@ use super::{
     windows::{DummyWindow, FileManagerWindow},
 };
 
+// TODO: Add command history buffer size to config
+
 pub struct App {
     running: bool,
     pub input_mode: InputMode,
     pub error: Option<Error>,
     pub window: Box<dyn Window>,
     pub config: Config,
+    pub command_history: CircularBuffer<String>,
     event_rx: Receiver<AppEvent>,
 }
 
@@ -33,6 +36,7 @@ impl App {
                 error: None,
                 window: Box::new(FileManagerWindow::new(directory)?),
                 config,
+                command_history: CircularBuffer::new(50),
                 event_rx: rx,
             },
             tx,

@@ -25,6 +25,8 @@ pub enum InputMode {
     },
     Commanding {
         state: InputState,
+        current_command: isize,
+        return_state: Option<InputState>,
     },
     Help {
         selected_index: usize,
