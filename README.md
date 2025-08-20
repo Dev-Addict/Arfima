@@ -2,6 +2,12 @@
 
 A file manager cli tool.
 
+## Feature Development
+
+List of features to be added.
+
+[ ] Open directory in window split
+
 ## License
 
 Copyright (c) Aria AzadiPour <aazadipour@pm.me>
