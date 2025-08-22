@@ -1,4 +1,7 @@
-use std::sync::mpsc::Sender;
+use std::sync::{
+    atomic::{AtomicU32, Ordering},
+    mpsc::Sender,
+};
 
 use crossterm::event::Event;
 use ratatui::{
@@ -25,7 +28,10 @@ pub enum WindowSize {
 }
 
 pub trait Window {
+    fn id(&self) -> u32;
+
     fn render(&self, app: &App, frame: &mut Frame, area: Rect, focused: bool);
+
     fn handle_event(
         &mut self,
         input_mode: &InputMode,
@@ -34,6 +40,7 @@ pub trait Window {
         event_tx: &Sender<AppEvent>,
         handled: bool,
     ) -> bool;
+
     fn split(self: Box<Self>, direction: Direction, count: usize) -> Box<dyn Window>;
 
     fn reset(&mut self) -> Result<()> {
@@ -70,4 +77,17 @@ pub trait Window {
     ) -> bool {
         false
     }
+
+    /// returns whether there is a window with the `id` inside somewhere
+    fn includes(&self, id: u32) -> bool;
+
+    fn remove(self: Box<Self>, _id: u32) -> Option<Box<dyn Window>> {
+        None
+    }
+}
+
+static WINDOW_ID: AtomicU32 = AtomicU32::new(1);
+
+pub fn generate_window_id() -> u32 {
+    WINDOW_ID.fetch_add(1, Ordering::Relaxed)
 }

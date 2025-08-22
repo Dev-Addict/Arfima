@@ -11,6 +11,10 @@ use crate::app::{App, AppEvent, InputMode, window::Window};
 pub struct DummyWindow;
 
 impl Window for DummyWindow {
+    fn id(&self) -> u32 {
+        0
+    }
+
     fn render(&self, _: &App, _: &mut Frame, _: Rect, _: bool) {}
     fn handle_event(
         &mut self,
@@ -24,5 +28,9 @@ impl Window for DummyWindow {
     }
     fn split(self: Box<Self>, _: Direction, _: usize) -> Box<dyn Window> {
         self
+    }
+
+    fn includes(&self, id: u32) -> bool {
+        id == 0
     }
 }

@@ -8,12 +8,15 @@ use ratatui::{
 
 use crate::app::{
     App, AppEvent, InputMode, Result,
-    window::{Window, WindowSize},
+    window::{Window, WindowSize, generate_window_id},
 };
+
+// TODO: reorganize the file
 
 use super::DummyWindow;
 
 pub struct Split {
+    id: u32,
     direction: Direction,
     windows: Vec<Box<dyn Window>>,
     focused_index: usize,
@@ -23,6 +26,7 @@ pub struct Split {
 impl Split {
     pub fn new(direction: Direction, windows: Vec<Box<dyn Window>>) -> Self {
         Self {
+            id: generate_window_id(),
             direction,
             windows,
             focused_index: 0,
@@ -35,6 +39,7 @@ impl Split {
         window_size: WindowSize,
     ) -> Self {
         Self {
+            id: generate_window_id(),
             direction,
             windows,
             focused_index: 0,
@@ -44,6 +49,10 @@ impl Split {
 }
 
 impl Window for Split {
+    fn id(&self) -> u32 {
+        self.id
+    }
+
     fn render(&self, app: &App, frame: &mut Frame, area: Rect, focused: bool) {
         let mut areas = vec![area; self.windows.len()];
         let mut window_sizes = vec![0_usize; self.windows.len()];
@@ -324,5 +333,65 @@ impl Window for Split {
         }
 
         false
+    }
+
+    fn includes(&self, id: u32) -> bool {
+        if self.id == id {
+            return true;
+        }
+
+        for window in &self.windows {
+            if window.includes(id) {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    fn remove(self: Box<Self>, id: u32) -> Option<Box<dyn Window>> {
+        let mut this = *self;
+
+        if this.windows.is_empty() {
+            return None;
+        }
+
+        if this.id == id {
+            return None;
+        }
+
+        let mut removable_index = None;
+        let mut includes_index = None;
+
+        for (i, window) in this.windows.iter().enumerate() {
+            if window.id() == id {
+                removable_index = Some(i);
+            }
+
+            if window.includes(id) {
+                includes_index = Some(i)
+            }
+        }
+
+        if let Some(i) = removable_index {
+            this.windows.remove(i);
+
+            if this.windows.is_empty() {
+                return None;
+            } else if this.windows.len() == 1 {
+                return Some(this.windows.remove(0));
+            } else if this.focused_index >= this.windows.len() {
+                this.focused_index = this.windows.len() - 1;
+            }
+        } else if let Some(i) = includes_index {
+            if let Some(window) = this.windows.get_mut(i) {
+                let old_window = std::mem::replace(window, Box::new(DummyWindow));
+                if let Some(new_child) = old_window.remove(id) {
+                    this.windows[i] = new_child;
+                }
+            }
+        }
+
+        Some(Box::new(this))
     }
 }

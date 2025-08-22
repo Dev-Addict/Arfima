@@ -15,7 +15,7 @@ use crate::{
     app::{
         App, AppEvent, Error, InputMode, Result,
         widgets::{add_title_to_block, draw_entries_table},
-        window::{Window, WindowSize},
+        window::{Window, WindowSize, generate_window_id},
     },
     directory_entry::{DirectoryEntry, read_directory},
 };
@@ -24,6 +24,7 @@ use super::Split;
 
 #[derive(Clone)]
 pub struct FileManagerWindow {
+    id: u32,
     directory: String,
     entries: Vec<DirectoryEntry>,
     selected_index: usize,
@@ -39,6 +40,7 @@ impl FileManagerWindow {
         }
 
         Ok(Self {
+            id: generate_window_id(),
             directory: directory.into(),
             entries: read_directory(path)?,
             selected_index: 0,
@@ -62,6 +64,10 @@ impl FileManagerWindow {
 }
 
 impl Window for FileManagerWindow {
+    fn id(&self) -> u32 {
+        self.id
+    }
+
     fn render(&self, app: &App, frame: &mut Frame, area: Rect, focused: bool) {
         let mut block = Block::bordered();
 
@@ -108,6 +114,7 @@ impl Window for FileManagerWindow {
 
         for _ in 0..count {
             windows.push(Box::new(FileManagerWindow {
+                id: generate_window_id(),
                 directory: self.directory.clone(),
                 entries: self.entries.clone(),
                 selected_index: self.selected_index,
@@ -156,5 +163,9 @@ impl Window for FileManagerWindow {
         }
 
         false
+    }
+
+    fn includes(&self, id: u32) -> bool {
+        self.id == id
     }
 }
