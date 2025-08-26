@@ -1,3 +1,5 @@
+mod input;
+
 use std::{
     fs,
     sync::{LazyLock, mpsc::Sender},
@@ -16,12 +18,14 @@ use ratatui::{
 use crate::{
     app::{
         App, AppEvent, InputMode, Result,
-        widgets::draw_entries_table,
+        widgets::draw_minimal_entries_table,
         window::{Window, WindowSize, generate_window_id},
         windows::Split,
     },
     directory_entry::{DirectoryEntry, DirectoryEntryType},
 };
+
+use input::handle_event;
 
 static USER_DIRECTORY_ID: LazyLock<u32> = LazyLock::new(generate_window_id);
 
@@ -98,7 +102,7 @@ impl Window for UserDirectoriesWindow {
         *USER_DIRECTORY_ID
     }
 
-    fn render(&self, app: &App, frame: &mut Frame, area: Rect, focused: bool) {
+    fn render(&self, _app: &App, frame: &mut Frame, area: Rect, focused: bool) {
         let mut block = Block::bordered().title(
             Line::from(vec![
                 Span::styled("", Style::default()),
@@ -112,32 +116,22 @@ impl Window for UserDirectoriesWindow {
             block = block.border_style(Style::default().fg(Color::Cyan));
         }
 
-        draw_entries_table(
-            frame,
-            area,
-            &self.entries,
-            self.selected_index,
-            block,
-            &app.config,
-        );
+        draw_minimal_entries_table(frame, area, &self.entries, self.selected_index, block);
     }
 
     fn handle_event(
         &mut self,
-        _input_mode: &InputMode,
-        _event: &Event,
+        input_mode: &InputMode,
+        event: &Event,
         focused: bool,
-        _event_tx: &Sender<AppEvent>,
+        event_tx: &Sender<AppEvent>,
         handled: bool,
     ) -> bool {
         if !focused || handled {
             return false;
         }
 
-        // TODO: handle events
-        // handle_event(self, input_mode, event, event_tx)
-
-        false
+        handle_event(self, input_mode, event, event_tx)
     }
 
     fn reset(&mut self) -> Result<()> {
