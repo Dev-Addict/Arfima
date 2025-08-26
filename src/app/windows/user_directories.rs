@@ -1,14 +1,29 @@
 use std::{
     fs,
-    sync::{Arc, Mutex, OnceLock},
+    sync::{LazyLock, mpsc::Sender},
 };
 
+use crossterm::event::Event;
 use directories::UserDirs;
+use ratatui::{
+    Frame,
+    layout::{Direction, Rect},
+    style::{Color, Style, Stylize},
+    text::{Line, Span},
+    widgets::Block,
+};
 
 use crate::{
-    app::window::{Window, WindowSize},
+    app::{
+        App, AppEvent, InputMode, Result,
+        widgets::draw_entries_table,
+        window::{Window, WindowSize, generate_window_id},
+        windows::Split,
+    },
     directory_entry::{DirectoryEntry, DirectoryEntryType},
 };
+
+static USER_DIRECTORY_ID: LazyLock<u32> = LazyLock::new(generate_window_id);
 
 pub struct UserDirectoriesWindow {
     entries: Vec<DirectoryEntry>,
@@ -17,11 +32,9 @@ pub struct UserDirectoriesWindow {
     is_open: bool,
 }
 
-static USER_DIRECTORIES_WINDOW: OnceLock<Arc<Mutex<UserDirectoriesWindow>>> = OnceLock::new();
-
 impl UserDirectoriesWindow {
-    fn new() -> Self {
-        let entries = if let Some(user_dirs) = UserDirs::new() {
+    fn entries() -> Vec<DirectoryEntry> {
+        if let Some(user_dirs) = UserDirs::new() {
             vec![
                 Some(user_dirs.home_dir()),
                 user_dirs.audio_dir(),
@@ -55,22 +68,126 @@ impl UserDirectoriesWindow {
             .collect()
         } else {
             vec![]
-        };
+        }
+    }
 
+    fn new() -> Self {
         Self {
-            entries,
+            entries: Self::entries(),
             selected_index: 0,
             window_size: WindowSize::DefaultSize(40),
             is_open: false,
         }
     }
 
-    pub fn get() -> Arc<Mutex<UserDirectoriesWindow>> {
-        USER_DIRECTORIES_WINDOW
-            .get_or_init(|| Arc::new(Mutex::new(UserDirectoriesWindow::new())))
-            .clone()
+    pub fn toggle(window: Box<dyn Window>) -> Option<Box<dyn Window>> {
+        if window.includes(*USER_DIRECTORY_ID) {
+            window.remove(*USER_DIRECTORY_ID)
+        } else {
+            Some(Box::new(Split::with_window_size(
+                Direction::Horizontal,
+                vec![Box::new(Self::new()), window],
+                WindowSize::Default,
+            )))
+        }
+    }
+}
+
+impl Window for UserDirectoriesWindow {
+    fn id(&self) -> u32 {
+        *USER_DIRECTORY_ID
     }
 
-    // pub fn toggle(window: Box<dyn Window>) -> Box<dyn Window> {
-    // }
+    fn render(&self, app: &App, frame: &mut Frame, area: Rect, focused: bool) {
+        let mut block = Block::bordered().title(
+            Line::from(vec![
+                Span::styled("", Style::default()),
+                Span::styled(" Arfima ", Style::default().reversed()),
+                Span::styled("", Style::default()),
+            ])
+            .bold(),
+        );
+
+        if focused {
+            block = block.border_style(Style::default().fg(Color::Cyan));
+        }
+
+        draw_entries_table(
+            frame,
+            area,
+            &self.entries,
+            self.selected_index,
+            block,
+            &app.config,
+        );
+    }
+
+    fn handle_event(
+        &mut self,
+        _input_mode: &InputMode,
+        _event: &Event,
+        focused: bool,
+        _event_tx: &Sender<AppEvent>,
+        handled: bool,
+    ) -> bool {
+        if !focused || handled {
+            return false;
+        }
+
+        // TODO: handle events
+        // handle_event(self, input_mode, event, event_tx)
+
+        false
+    }
+
+    fn reset(&mut self) -> Result<()> {
+        self.entries = Self::entries();
+        self.selected_index = self.selected_index.min(self.entries.len() - 1);
+
+        Ok(())
+    }
+
+    fn split(self: Box<Self>, _: Direction, _: usize) -> Box<dyn Window> {
+        self
+    }
+
+    fn get_window_size(&self) -> &WindowSize {
+        &self.window_size
+    }
+
+    fn adjust_window_size(
+        &mut self,
+        direction: Direction,
+        adjustment: isize,
+        parent: Option<(&Direction, usize)>,
+    ) -> bool {
+        if let Some((d, windows)) = parent {
+            if d == &direction {
+                self.window_size = match self.window_size {
+                    WindowSize::Default => {
+                        WindowSize::Adjusted(adjustment.saturating_mul(windows.cast_signed()))
+                    }
+                    WindowSize::DefaultSize(size) => WindowSize::AdjustedSize(
+                        size,
+                        adjustment.saturating_mul(windows.cast_signed()),
+                    ),
+                    WindowSize::Adjusted(prev) => WindowSize::Adjusted(
+                        prev.saturating_add(adjustment.saturating_mul(windows.cast_signed())),
+                    ),
+                    WindowSize::AdjustedSize(size, prev) => WindowSize::AdjustedSize(
+                        size,
+                        prev.saturating_add(adjustment.saturating_mul(windows.cast_signed())),
+                    ),
+                };
+
+                return true;
+            }
+        }
+
+        false
+    }
+
+    fn includes(&self, id: u32) -> bool {
+        *USER_DIRECTORY_ID == id
+    }
 }

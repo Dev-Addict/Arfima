@@ -1,5 +1,8 @@
 use crate::app::{
-    App, InputMode, precommand::Precommand, widgets::types::InputState, windows::DummyWindow,
+    App, InputMode,
+    precommand::Precommand,
+    widgets::types::InputState,
+    windows::{DummyWindow, UserDirectoriesWindow},
 };
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::layout::Direction;
@@ -141,6 +144,26 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                     current_command: 0,
                     return_state: None,
                 };
+            }
+            (_, KeyCode::Char(' ')) => {
+                *precommand = Some(Precommand::Leader);
+            }
+            (_, KeyCode::Char('n')) => {
+                if let Some(Precommand::Leader) = precommand {
+                    *precommand = None;
+
+                    let app_window = std::mem::replace(&mut app.window, Box::new(DummyWindow));
+
+                    if let Some(window) = UserDirectoriesWindow::toggle(app_window) {
+                        app.window = window;
+                    } else {
+                        app.quit();
+                    }
+
+                    return true;
+                }
+
+                return false;
             }
             (_, KeyCode::Char(c)) => {
                 if c.is_ascii_digit() {
