@@ -35,40 +35,21 @@ pub fn handle(
 
                 window.selected_index = window.selected_index.saturating_sub(count);
             }
-            (_, KeyCode::Left | KeyCode::Char('h') | KeyCode::Backspace | KeyCode::Char('o')) => {
-                // TODO: Open in a new window or existing window the current directory or if it is
-                // a file open the file
-                //
-                // let mut count = 0;
-                // if let Some(Precommand::Repeat(repeat)) = precommand {
-                //     if *repeat == 0 {
-                //         return true;
-                //     }
-                //
-                //     count = repeat.saturating_sub(1);
-                // }
-                //
-                // let mut target_directory: &Path;
-                //
-                // if let Some(parent) = Path::new(&window.directory).parent() {
-                //     target_directory = parent;
-                // } else {
-                //     return true;
-                // }
-                //
-                // while let Some(parent) = Path::new(target_directory).parent() {
-                //     if count == 0 {
-                //         break;
-                //     }
-                //
-                //     target_directory = parent;
-                //     count = count.saturating_sub(1);
-                // }
-                //
-                // if let Err(e) = window.set_directory(target_directory.to_string_lossy().to_string())
-                // {
-                //     let _ = event_tx.send(AppEvent::SetError(Some(e)));
-                // }
+            (_, KeyCode::Right | KeyCode::Char('l') | KeyCode::Enter) => {
+                if let Some(entity) = window.entries.get(window.selected_index) {
+                    let _ = event_tx.send(AppEvent::Open {
+                        path: entity.path().to_owned(),
+                        new: false,
+                    });
+                }
+            }
+            (_, KeyCode::Char('o')) => {
+                if let Some(entity) = window.entries.get(window.selected_index) {
+                    let _ = event_tx.send(AppEvent::Open {
+                        path: entity.path().to_owned(),
+                        new: true,
+                    });
+                }
             }
             (_, KeyCode::Home | KeyCode::Char('g')) => {
                 if let Some(Precommand::Repeat(repeat)) = precommand {

@@ -1,6 +1,10 @@
-use std::sync::{
-    atomic::{AtomicU32, Ordering},
-    mpsc::Sender,
+use std::{
+    any::{Any, TypeId},
+    path::PathBuf,
+    sync::{
+        atomic::{AtomicU32, Ordering},
+        mpsc::Sender,
+    },
 };
 
 use crossterm::event::Event;
@@ -9,7 +13,7 @@ use ratatui::{
     layout::{Direction, Rect},
 };
 
-use super::{App, AppEvent, InputMode, Result};
+use super::{App, AppEvent, Error, InputMode, Result};
 
 #[derive(Clone)]
 pub enum WindowSize {
@@ -84,6 +88,12 @@ pub trait Window {
     fn remove(self: Box<Self>, _id: u32) -> Option<Box<dyn Window>> {
         None
     }
+
+    fn open(self: Box<Self>, path: PathBuf, new: bool) -> (Box<dyn Window>, Option<Error>);
+
+    fn as_any(&self) -> &dyn Any;
+
+    fn includes_type_id(&self, type_id: TypeId) -> Option<u32>;
 }
 
 static WINDOW_ID: AtomicU32 = AtomicU32::new(1);

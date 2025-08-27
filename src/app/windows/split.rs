@@ -1,4 +1,7 @@
-use std::sync::mpsc::Sender;
+use std::{
+    any::{Any, TypeId},
+    sync::mpsc::Sender,
+};
 
 use crossterm::event::Event;
 use ratatui::{
@@ -9,6 +12,7 @@ use ratatui::{
 use crate::app::{
     App, AppEvent, InputMode, Result,
     window::{Window, WindowSize, generate_window_id},
+    windows::FileManagerWindow,
 };
 
 // TODO: reorganize the file
@@ -33,6 +37,7 @@ impl Split {
             window_size: WindowSize::Default,
         }
     }
+
     pub fn with_window_size(
         direction: Direction,
         windows: Vec<Box<dyn Window>>,
@@ -44,6 +49,20 @@ impl Split {
             windows,
             focused_index: 0,
             window_size,
+        }
+    }
+
+    pub fn with_focused_index(
+        direction: Direction,
+        windows: Vec<Box<dyn Window>>,
+        focused_index: usize,
+    ) -> Self {
+        Self {
+            id: generate_window_id(),
+            direction,
+            focused_index: focused_index.min(windows.len() - 1),
+            windows,
+            window_size: WindowSize::Default,
         }
     }
 }
@@ -393,5 +412,88 @@ impl Window for Split {
         }
 
         Some(Box::new(this))
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn open(
+        self: Box<Self>,
+        path: std::path::PathBuf,
+        new: bool,
+    ) -> (Box<dyn Window>, Option<crate::app::Error>) {
+        let mut this = *self;
+
+        if !new && let Some(id) = this.includes_type_id(TypeId::of::<FileManagerWindow>()) {
+            let mut openable_index = None;
+            let mut includes_index = None;
+
+            for (i, window) in this.windows.iter().enumerate() {
+                if window.id() == id {
+                    openable_index = Some(i);
+                }
+
+                if window.includes(id) {
+                    includes_index = Some(i)
+                }
+            }
+
+            if let Some(i) = openable_index {
+                if let Some(window) = this.windows.get_mut(i) {
+                    let window = std::mem::replace(window, Box::new(DummyWindow));
+
+                    this.windows[i] = match FileManagerWindow::with_id_and_window_size(
+                        path.to_string_lossy().as_ref(),
+                        window.id(),
+                        window.get_window_size().to_owned(),
+                    ) {
+                        Ok(window) => Box::new(window),
+                        Err(e) => {
+                            this.windows[i] = window;
+                            return (Box::new(this), Some(e));
+                        }
+                    };
+                    this.focused_index = i;
+                }
+            } else if let Some(i) = includes_index {
+                if let Some(window) = this.windows.get_mut(i) {
+                    let window = std::mem::replace(window, Box::new(DummyWindow));
+                    let (window, error) = window.open(path, false);
+                    this.windows[i] = window;
+
+                    if let Some(e) = error {
+                        return (Box::new(this), Some(e));
+                    }
+                }
+            }
+        } else {
+            this.windows.push(
+                match FileManagerWindow::new(path.to_string_lossy().as_ref()) {
+                    Ok(window) => Box::new(window),
+                    Err(e) => {
+                        return (Box::new(this), Some(e));
+                    }
+                },
+            );
+
+            this.focused_index = this.windows.len() - 1;
+        }
+
+        (Box::new(this), None)
+    }
+
+    fn includes_type_id(&self, type_id: TypeId) -> Option<u32> {
+        if type_id == TypeId::of::<Split>() {
+            Some(self.id)
+        } else {
+            for window in self.windows.iter() {
+                if let Some(id) = window.includes_type_id(type_id) {
+                    return Some(id);
+                }
+            }
+
+            None
+        }
     }
 }

@@ -1,7 +1,9 @@
 mod input;
 
 use std::{
+    any::{Any, TypeId},
     fs,
+    path::PathBuf,
     sync::{LazyLock, mpsc::Sender},
 };
 
@@ -17,10 +19,10 @@ use ratatui::{
 
 use crate::{
     app::{
-        App, AppEvent, InputMode, Result,
+        App, AppEvent, Error, InputMode, Result,
         widgets::draw_minimal_entries_table,
         window::{Window, WindowSize, generate_window_id},
-        windows::Split,
+        windows::{FileManagerWindow, Split},
     },
     directory_entry::{DirectoryEntry, DirectoryEntryType},
 };
@@ -183,5 +185,33 @@ impl Window for UserDirectoriesWindow {
 
     fn includes(&self, id: u32) -> bool {
         *USER_DIRECTORY_ID == id
+    }
+
+    fn open(self: Box<Self>, path: PathBuf, _: bool) -> (Box<dyn Window>, Option<Error>) {
+        let file_manager = match FileManagerWindow::new(path.to_string_lossy().as_ref()) {
+            Ok(window) => window,
+            Err(e) => return (self, Some(e)),
+        };
+
+        (
+            Box::new(Split::with_focused_index(
+                Direction::Horizontal,
+                vec![self, Box::new(file_manager)],
+                1,
+            )),
+            None,
+        )
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn includes_type_id(&self, type_id: TypeId) -> Option<u32> {
+        if type_id == TypeId::of::<UserDirectoriesWindow>() {
+            Some(*USER_DIRECTORY_ID)
+        } else {
+            None
+        }
     }
 }

@@ -1,6 +1,10 @@
 mod input;
 
-use std::{path::Path, sync::mpsc::Sender};
+use std::{
+    any::{Any, TypeId},
+    path::{Path, PathBuf},
+    sync::mpsc::Sender,
+};
 
 use crossterm::event::Event;
 use input::handle_event;
@@ -48,7 +52,27 @@ impl FileManagerWindow {
         })
     }
 
-    fn set_directory(&mut self, directory: String) -> Result<()> {
+    pub fn with_id_and_window_size(
+        directory: &str,
+        id: u32,
+        window_size: WindowSize,
+    ) -> Result<Self> {
+        let path = Path::new(directory);
+
+        if !path.is_dir() {
+            return Err(Error::InvalidDirectoryPath(directory.into()));
+        }
+
+        Ok(Self {
+            id,
+            directory: directory.into(),
+            entries: read_directory(path)?,
+            selected_index: 0,
+            window_size,
+        })
+    }
+
+    pub fn set_directory(&mut self, directory: String) -> Result<()> {
         let path = Path::new(&directory);
 
         if !path.is_dir() {
@@ -167,5 +191,46 @@ impl Window for FileManagerWindow {
 
     fn includes(&self, id: u32) -> bool {
         self.id == id
+    }
+
+    fn open(self: Box<Self>, path: PathBuf, _: bool) -> (Box<dyn Window>, Option<Error>) {
+        let path = Path::new(&path);
+
+        if !path.is_dir() {
+            return (
+                self,
+                Some(Error::InvalidDirectoryPath(
+                    path.to_string_lossy().to_string(),
+                )),
+            );
+        }
+
+        let entries = match read_directory(path) {
+            Ok(entries) => entries,
+            Err(e) => return (self, Some(e.into())),
+        };
+
+        (
+            Box::new(Self {
+                id: self.id,
+                directory: path.to_string_lossy().to_string(),
+                entries,
+                selected_index: 0,
+                window_size: self.window_size,
+            }),
+            None,
+        )
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn includes_type_id(&self, type_id: std::any::TypeId) -> Option<u32> {
+        if type_id == TypeId::of::<FileManagerWindow>() {
+            Some(self.id)
+        } else {
+            None
+        }
     }
 }

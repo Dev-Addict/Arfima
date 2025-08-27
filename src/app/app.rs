@@ -85,6 +85,11 @@ impl App {
             }
             AppEvent::SetError(e) => self.error = e,
             AppEvent::UpdateInputMode(input_mode) => self.input_mode = input_mode,
+            AppEvent::Open { path, new } => {
+                let window = std::mem::replace(&mut self.window, Box::new(DummyWindow));
+
+                (self.window, self.error) = window.open(path, new);
+            }
             AppEvent::Reset => self.reset()?,
         }
 

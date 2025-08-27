@@ -14,6 +14,8 @@ pub enum Error {
     RenameBufferTypeMismatch,
     File(FileError),
     Command(process_command::Error),
+    // Called something on a dummy that shouldn't
+    NotADummy,
 }
 
 impl Display for Error {
@@ -28,6 +30,7 @@ impl Display for Error {
             Self::RenameBufferTypeMismatch => write!(f, "Rename buffer type mismatch"),
             Self::File(e) => write!(f, "File error: {e}"),
             Self::Command(e) => write!(f, "Command parse error: {e}"),
+            Self::NotADummy => write!(f, "Not a DUMMY!"),
         }
     }
 }
