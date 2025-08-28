@@ -2,7 +2,7 @@ use crate::app::{
     App, InputMode,
     precommand::Precommand,
     widgets::types::InputState,
-    windows::{DummyWindow, UserDirectoriesWindow},
+    windows::{CommonEntriesWindow, DummyWindow},
 };
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::layout::Direction;
@@ -154,7 +154,7 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
 
                     let app_window = std::mem::replace(&mut app.window, Box::new(DummyWindow));
 
-                    if let Some(window) = UserDirectoriesWindow::toggle(app_window, &app.config) {
+                    if let Some(window) = CommonEntriesWindow::toggle(app_window, &app.config) {
                         app.window = window;
                     } else {
                         app.quit();

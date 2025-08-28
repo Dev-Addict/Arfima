@@ -7,10 +7,10 @@ use key::handle_key_event;
 
 use crate::app::{AppEvent, InputMode};
 
-use super::UserDirectoriesWindow;
+use super::CommonEntriesWindow;
 
 pub fn handle_event(
-    window: &mut UserDirectoriesWindow,
+    window: &mut CommonEntriesWindow,
     input_mode: &InputMode,
     event: &Event,
     event_tx: &Sender<AppEvent>,

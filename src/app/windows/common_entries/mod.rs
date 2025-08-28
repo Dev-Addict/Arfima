@@ -30,16 +30,16 @@ use crate::{
 
 use input::handle_event;
 
-static USER_DIRECTORY_ID: LazyLock<u32> = LazyLock::new(generate_window_id);
+static COMMON_ENTRIES_WINDOW_ID: LazyLock<u32> = LazyLock::new(generate_window_id);
 
-pub struct UserDirectoriesWindow {
+pub struct CommonEntriesWindow {
     entries: Vec<DirectoryEntry>,
     selected_index: usize,
     window_size: WindowSize,
     is_open: bool,
 }
 
-impl UserDirectoriesWindow {
+impl CommonEntriesWindow {
     fn entries(config: &Config) -> Vec<DirectoryEntry> {
         let mut entries = config
             .common_entries()
@@ -118,8 +118,8 @@ impl UserDirectoriesWindow {
     }
 
     pub fn toggle(window: Box<dyn Window>, config: &Config) -> Option<Box<dyn Window>> {
-        if window.includes(*USER_DIRECTORY_ID) {
-            window.remove(*USER_DIRECTORY_ID)
+        if window.includes(*COMMON_ENTRIES_WINDOW_ID) {
+            window.remove(*COMMON_ENTRIES_WINDOW_ID)
         } else {
             Some(Box::new(Split::with_window_size(
                 Direction::Horizontal,
@@ -130,9 +130,9 @@ impl UserDirectoriesWindow {
     }
 }
 
-impl Window for UserDirectoriesWindow {
+impl Window for CommonEntriesWindow {
     fn id(&self) -> u32 {
-        *USER_DIRECTORY_ID
+        *COMMON_ENTRIES_WINDOW_ID
     }
 
     fn render(&self, _app: &App, frame: &mut Frame, area: Rect, focused: bool) {
@@ -215,7 +215,7 @@ impl Window for UserDirectoriesWindow {
     }
 
     fn includes(&self, id: u32) -> bool {
-        *USER_DIRECTORY_ID == id
+        *COMMON_ENTRIES_WINDOW_ID == id
     }
 
     fn open(self: Box<Self>, path: PathBuf, _: bool) -> (Box<dyn Window>, Option<Error>) {
@@ -239,8 +239,8 @@ impl Window for UserDirectoriesWindow {
     }
 
     fn includes_type_id(&self, type_id: TypeId) -> Option<u32> {
-        if type_id == TypeId::of::<UserDirectoriesWindow>() {
-            Some(*USER_DIRECTORY_ID)
+        if type_id == TypeId::of::<CommonEntriesWindow>() {
+            Some(*COMMON_ENTRIES_WINDOW_ID)
         } else {
             None
         }

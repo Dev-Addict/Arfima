@@ -6,10 +6,10 @@ use crossterm::event::{KeyEvent, KeyEventKind};
 
 use crate::app::{AppEvent, InputMode};
 
-use super::UserDirectoriesWindow;
+use super::CommonEntriesWindow;
 
 pub fn handle_key_event(
-    window: &mut UserDirectoriesWindow,
+    window: &mut CommonEntriesWindow,
     input_mode: &InputMode,
     key: &KeyEvent,
     event_tx: &Sender<AppEvent>,

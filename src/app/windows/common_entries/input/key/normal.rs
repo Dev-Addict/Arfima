@@ -2,10 +2,10 @@ use std::sync::mpsc::Sender;
 
 use crossterm::event::{KeyCode, KeyEvent};
 
-use crate::app::{AppEvent, InputMode, precommand::Precommand, windows::UserDirectoriesWindow};
+use crate::app::{AppEvent, InputMode, precommand::Precommand, windows::CommonEntriesWindow};
 
 pub fn handle(
-    window: &mut UserDirectoriesWindow,
+    window: &mut CommonEntriesWindow,
     input_mode: &InputMode,
     key: &KeyEvent,
     event_tx: &Sender<AppEvent>,
