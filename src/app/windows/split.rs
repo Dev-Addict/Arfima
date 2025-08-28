@@ -468,6 +468,8 @@ impl Window for Split {
                     if let Some(e) = error {
                         return (Box::new(this), Some(e));
                     }
+
+                    this.focused_index = i;
                 }
             }
         } else {
