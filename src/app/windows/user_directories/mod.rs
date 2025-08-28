@@ -24,6 +24,7 @@ use crate::{
         window::{Window, WindowSize, generate_window_id},
         windows::{FileManagerWindow, Split},
     },
+    config::Config,
     directory_entry::{DirectoryEntry, DirectoryEntryType},
 };
 
@@ -39,9 +40,35 @@ pub struct UserDirectoriesWindow {
 }
 
 impl UserDirectoriesWindow {
-    fn entries() -> Vec<DirectoryEntry> {
-        if let Some(user_dirs) = UserDirs::new() {
-            vec![
+    fn entries(config: &Config) -> Vec<DirectoryEntry> {
+        let mut entries = config
+            .common_entries()
+            .other_paths()
+            .iter()
+            .filter_map(|path| {
+                let path = path.as_path();
+
+                if !path.exists() {
+                    return None;
+                }
+
+                let name = path.file_name()?.to_string_lossy().to_string();
+                let modified = fs::metadata(path).ok()?.modified().ok()?;
+
+                DirectoryEntry::builder()
+                    .name(name)
+                    .modified(Some(modified))
+                    .path(path)
+                    .entry_type(DirectoryEntryType::Directory)
+                    .build()
+                    .ok()
+            })
+            .collect::<Vec<DirectoryEntry>>();
+
+        if config.common_entries().user_dirs()
+            && let Some(user_dirs) = UserDirs::new()
+        {
+            let mut user_dirs = vec![
                 Some(user_dirs.home_dir()),
                 user_dirs.audio_dir(),
                 user_dirs.desktop_dir(),
@@ -71,28 +98,32 @@ impl UserDirectoriesWindow {
                 }
                 None => None,
             })
-            .collect()
+            .collect::<Vec<DirectoryEntry>>();
+
+            user_dirs.append(&mut entries);
+
+            user_dirs
         } else {
-            vec![]
+            entries
         }
     }
 
-    fn new() -> Self {
+    fn new(config: &Config) -> Self {
         Self {
-            entries: Self::entries(),
+            entries: Self::entries(config),
             selected_index: 0,
             window_size: WindowSize::DefaultSize(40),
             is_open: false,
         }
     }
 
-    pub fn toggle(window: Box<dyn Window>) -> Option<Box<dyn Window>> {
+    pub fn toggle(window: Box<dyn Window>, config: &Config) -> Option<Box<dyn Window>> {
         if window.includes(*USER_DIRECTORY_ID) {
             window.remove(*USER_DIRECTORY_ID)
         } else {
             Some(Box::new(Split::with_window_size(
                 Direction::Horizontal,
-                vec![Box::new(Self::new()), window],
+                vec![Box::new(Self::new(config)), window],
                 WindowSize::Default,
             )))
         }
@@ -136,8 +167,8 @@ impl Window for UserDirectoriesWindow {
         handle_event(self, input_mode, event, event_tx)
     }
 
-    fn reset(&mut self) -> Result<()> {
-        self.entries = Self::entries();
+    fn reset(&mut self, config: &Config) -> Result<()> {
+        self.entries = Self::entries(config);
         self.selected_index = self.selected_index.min(self.entries.len() - 1);
 
         Ok(())

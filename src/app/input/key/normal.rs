@@ -154,7 +154,7 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
 
                     let app_window = std::mem::replace(&mut app.window, Box::new(DummyWindow));
 
-                    if let Some(window) = UserDirectoriesWindow::toggle(app_window) {
+                    if let Some(window) = UserDirectoriesWindow::toggle(app_window, &app.config) {
                         app.window = window;
                     } else {
                         app.quit();

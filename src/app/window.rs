@@ -13,6 +13,8 @@ use ratatui::{
     layout::{Direction, Rect},
 };
 
+use crate::config::Config;
+
 use super::{App, AppEvent, Error, InputMode, Result};
 
 #[derive(Clone)]
@@ -47,7 +49,7 @@ pub trait Window {
 
     fn split(self: Box<Self>, direction: Direction, count: usize) -> Box<dyn Window>;
 
-    fn reset(&mut self) -> Result<()> {
+    fn reset(&mut self, _config: &Config) -> Result<()> {
         Ok(())
     }
 

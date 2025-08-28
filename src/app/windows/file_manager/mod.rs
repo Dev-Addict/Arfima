@@ -21,6 +21,7 @@ use crate::{
         widgets::{add_title_to_block, draw_entries_table},
         window::{Window, WindowSize, generate_window_id},
     },
+    config::Config,
     directory_entry::{DirectoryEntry, read_directory},
 };
 
@@ -126,7 +127,7 @@ impl Window for FileManagerWindow {
         handle_event(self, input_mode, event, event_tx)
     }
 
-    fn reset(&mut self) -> Result<()> {
+    fn reset(&mut self, _: &Config) -> Result<()> {
         self.entries = read_directory(Path::new(&self.directory))?;
         self.selected_index = self.selected_index.min(self.entries.len() - 1);
 

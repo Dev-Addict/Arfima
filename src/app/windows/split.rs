@@ -9,10 +9,13 @@ use ratatui::{
     layout::{Direction, Rect},
 };
 
-use crate::app::{
-    App, AppEvent, InputMode, Result,
-    window::{Window, WindowSize, generate_window_id},
-    windows::FileManagerWindow,
+use crate::{
+    app::{
+        App, AppEvent, InputMode, Result,
+        window::{Window, WindowSize, generate_window_id},
+        windows::FileManagerWindow,
+    },
+    config::Config,
 };
 
 // TODO: reorganize the file
@@ -202,9 +205,9 @@ impl Window for Split {
         handled
     }
 
-    fn reset(&mut self) -> Result<()> {
+    fn reset(&mut self, config: &Config) -> Result<()> {
         for window in self.windows.iter_mut() {
-            window.reset()?;
+            window.reset(config)?;
         }
 
         Ok(())
