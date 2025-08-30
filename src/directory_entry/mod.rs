@@ -105,6 +105,50 @@ impl DirectoryEntry {
     }
 }
 
+impl TryFrom<&PathBuf> for DirectoryEntry {
+    type Error = Error;
+
+    fn try_from(path: &PathBuf) -> std::result::Result<Self, Self::Error> {
+        let path = path.as_path();
+
+        let metadata = path.metadata()?;
+
+        let file_name = path
+            .file_name()
+            .ok_or(Self::Error::MissingName)?
+            .to_string_lossy()
+            .to_string();
+
+        let entry_builder = DirectoryEntry::builder()
+            .name(file_name)
+            .modified(metadata.modified().ok());
+
+        if metadata.is_file() {
+            let extension = path
+                .extension()
+                .map(|ext| ext.to_string_lossy().to_string());
+
+            Ok(entry_builder
+                .path(path)
+                .entry_type(DirectoryEntryType::File {
+                    extension,
+                    size: metadata.len(),
+                })
+                .build()?)
+        } else if metadata.is_dir() {
+            Ok(entry_builder
+                .path(path)
+                .entry_type(DirectoryEntryType::Directory)
+                .build()?)
+        } else {
+            Ok(entry_builder
+                .path(path)
+                .entry_type(DirectoryEntryType::Other)
+                .build()?)
+        }
+    }
+}
+
 impl PartialOrd for DirectoryEntry {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))

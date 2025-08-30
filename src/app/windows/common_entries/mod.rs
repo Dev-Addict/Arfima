@@ -2,7 +2,6 @@ mod input;
 
 use std::{
     any::{Any, TypeId},
-    fs,
     path::PathBuf,
     sync::{LazyLock, mpsc::Sender},
 };
@@ -25,7 +24,7 @@ use crate::{
         windows::{FileManagerWindow, Split},
     },
     config::Config,
-    directory_entry::{DirectoryEntry, DirectoryEntryType},
+    directory_entry::DirectoryEntry,
 };
 
 use input::handle_event;
@@ -45,24 +44,7 @@ impl CommonEntriesWindow {
             .common_entries()
             .other_paths()
             .iter()
-            .filter_map(|path| {
-                let path = path.as_path();
-
-                if !path.exists() {
-                    return None;
-                }
-
-                let name = path.file_name()?.to_string_lossy().to_string();
-                let modified = fs::metadata(path).ok()?.modified().ok()?;
-
-                DirectoryEntry::builder()
-                    .name(name)
-                    .modified(Some(modified))
-                    .path(path)
-                    .entry_type(DirectoryEntryType::Directory)
-                    .build()
-                    .ok()
-            })
+            .filter_map(|path| path.try_into().ok())
             .collect::<Vec<DirectoryEntry>>();
 
         if config.common_entries().user_dirs()
@@ -81,21 +63,8 @@ impl CommonEntriesWindow {
                 user_dirs.video_dir(),
             ]
             .into_iter()
-            .filter_map(|dir| match dir {
-                Some(dir) => {
-                    let name = dir.file_name()?.to_string_lossy().to_string();
-                    let modified = fs::metadata(dir).ok()?.modified().ok()?;
-
-                    Some(
-                        DirectoryEntry::builder()
-                            .name(name)
-                            .modified(Some(modified))
-                            .path(dir)
-                            .entry_type(DirectoryEntryType::Directory)
-                            .build()
-                            .ok()?,
-                    )
-                }
+            .filter_map(|path| match path {
+                Some(path) => (&path.to_path_buf()).try_into().ok(),
                 None => None,
             })
             .collect::<Vec<DirectoryEntry>>();

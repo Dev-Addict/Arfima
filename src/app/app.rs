@@ -3,7 +3,12 @@ use std::sync::mpsc::{Receiver, Sender, channel};
 use crossterm::event::{self};
 use ratatui::{DefaultTerminal, layout::Direction};
 
-use crate::{config::Config, types::CircularBuffer};
+use crate::{
+    config::Config,
+    directory_entry::DirectoryEntryType,
+    types::CircularBuffer,
+    utils::file::{FileError, get_opening_methods, open_file},
+};
 
 use super::{
     AppEvent, Error, InputMode, Result,
@@ -85,12 +90,39 @@ impl App {
             }
             AppEvent::SetError(e) => self.error = e,
             AppEvent::UpdateInputMode(input_mode) => self.input_mode = input_mode,
-            AppEvent::Open { path, new } => {
-                // TODO: Open things other than directories
-                let window = std::mem::replace(&mut self.window, Box::new(DummyWindow));
+            AppEvent::Open {
+                path,
+                new,
+                entry_type,
+            } => match entry_type {
+                DirectoryEntryType::Directory => {
+                    let window = std::mem::replace(&mut self.window, Box::new(DummyWindow));
 
-                (self.window, self.error) = window.open(path, new);
-            }
+                    (self.window, self.error) = window.open(path, new);
+                }
+                _ => {
+                    if new {
+                        match get_opening_methods(&path) {
+                            Ok(apps) => {
+                                if apps.is_empty() {
+                                    self.error = Some(FileError::NoAppsFound.into());
+                                } else {
+                                    self.input_mode = InputMode::Opening {
+                                        apps,
+                                        path: path.to_string_lossy().to_string(),
+                                        selected_index: 0,
+                                    };
+                                }
+                            }
+                            Err(e) => {
+                                self.error = Some(e.into());
+                            }
+                        }
+                    } else {
+                        let _ = open_file(&path);
+                    }
+                }
+            },
             AppEvent::Reset => self.reset()?,
         }
 

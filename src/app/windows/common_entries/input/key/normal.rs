@@ -40,6 +40,7 @@ pub fn handle(
                     let _ = event_tx.send(AppEvent::Open {
                         path: entity.path().to_owned(),
                         new: false,
+                        entry_type: entity.entry_type().to_owned(),
                     });
                 }
             }
@@ -48,6 +49,7 @@ pub fn handle(
                     let _ = event_tx.send(AppEvent::Open {
                         path: entity.path().to_owned(),
                         new: true,
+                        entry_type: entity.entry_type().to_owned(),
                     });
                 }
             }
