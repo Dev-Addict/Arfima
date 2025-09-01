@@ -3,8 +3,7 @@ mod normal;
 mod removing;
 mod renaming;
 
-use std::sync::mpsc::Sender;
-
+use crossbeam::channel::Sender;
 use crossterm::event::{KeyEvent, KeyEventKind};
 
 use crate::app::{AppEvent, InputMode};

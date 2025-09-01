@@ -1,12 +1,10 @@
 use std::{
     any::{Any, TypeId},
     path::PathBuf,
-    sync::{
-        atomic::{AtomicU32, Ordering},
-        mpsc::Sender,
-    },
+    sync::atomic::{AtomicU32, Ordering},
 };
 
+use crossbeam::channel::Sender;
 use crossterm::event::Event;
 use ratatui::{
     Frame,

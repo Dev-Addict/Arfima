@@ -1,5 +1,4 @@
-use std::sync::mpsc::{Receiver, Sender, channel};
-
+use crossbeam::channel::{Receiver, Sender, unbounded};
 use crossterm::event::{self};
 use ratatui::{DefaultTerminal, layout::Direction};
 
@@ -30,7 +29,7 @@ pub struct App {
 
 impl App {
     pub fn new(directory: &str, config: Config) -> Result<(Self, Sender<AppEvent>)> {
-        let (tx, rx) = channel();
+        let (tx, rx) = unbounded();
 
         Ok((
             Self {

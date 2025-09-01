@@ -1,5 +1,6 @@
-use std::{path::Path, sync::mpsc::Sender};
+use std::path::Path;
 
+use crossbeam::channel::Sender;
 use crossterm::event::{KeyCode, KeyEvent};
 
 use crate::{

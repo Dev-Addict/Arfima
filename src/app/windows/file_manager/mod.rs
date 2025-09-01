@@ -3,9 +3,9 @@ mod input;
 use std::{
     any::{Any, TypeId},
     path::{Path, PathBuf},
-    sync::mpsc::Sender,
 };
 
+use crossbeam::channel::Sender;
 use crossterm::event::Event;
 use input::handle_event;
 use ratatui::{

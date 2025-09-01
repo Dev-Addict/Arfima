@@ -1,4 +1,6 @@
-use std::{fs, path::Path, sync::mpsc::Sender};
+use std::{fs, path::Path};
+
+use crossbeam::channel::Sender;
 
 use crate::app::{AppEvent, Result, widgets::types::InputState};
 

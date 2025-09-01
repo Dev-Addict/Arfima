@@ -1,8 +1,6 @@
-use std::{
-    any::{Any, TypeId},
-    sync::mpsc::Sender,
-};
+use std::any::{Any, TypeId};
 
+use crossbeam::channel::Sender;
 use crossterm::event::Event;
 use ratatui::{
     Frame,

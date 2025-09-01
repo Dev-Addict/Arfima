@@ -1,8 +1,8 @@
 mod key;
 
-use std::sync::mpsc::Sender;
-
+use crossbeam::channel::Sender;
 use crossterm::event::Event;
+
 use key::handle_key_event;
 
 use crate::app::{AppEvent, InputMode};

@@ -3,9 +3,10 @@ mod input;
 use std::{
     any::{Any, TypeId},
     path::PathBuf,
-    sync::{LazyLock, mpsc::Sender},
+    sync::LazyLock,
 };
 
+use crossbeam::channel::Sender;
 use crossterm::event::Event;
 use directories::UserDirs;
 use ratatui::{

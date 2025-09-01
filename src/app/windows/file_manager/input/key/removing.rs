@@ -1,5 +1,4 @@
-use std::sync::mpsc::Sender;
-
+use crossbeam::channel::Sender;
 use crossterm::event::{KeyCode, KeyEvent};
 
 use crate::{
