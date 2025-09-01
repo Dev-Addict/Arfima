@@ -18,8 +18,6 @@ use crate::{
     data::{CONFIG_FILE_NAME, package},
 };
 
-// TODO: Switch to crossbeam for channels
-
 fn main() -> color_eyre::Result<()> {
     let directory = match env::args().nth(1) {
         Some(p) => {
