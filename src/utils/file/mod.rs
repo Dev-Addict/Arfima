@@ -1,5 +1,6 @@
 mod add_path;
 mod delete_path;
+mod expand_tilde;
 mod file_error;
 mod file_result;
 mod get_opening_methods;
@@ -8,6 +9,7 @@ mod rename_path;
 
 pub use add_path::add_path;
 pub use delete_path::delete_path;
+pub use expand_tilde::expand_tilde;
 pub use file_error::FileError;
 pub use file_result::FileResult;
 pub use get_opening_methods::get_opening_methods;
