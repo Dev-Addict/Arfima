@@ -8,6 +8,8 @@ use crate::{
     },
 };
 
+// TODO: Handle the commands somewhere else
+
 pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
     if let InputMode::Commanding {
         state,
@@ -105,6 +107,11 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                                 app.quit();
                             } else {
                                 app.quit_focused_window();
+                            }
+                        }
+                        Command::Save(_) => {
+                            if let Err(e) = app.config.save() {
+                                app.error = Some(e.into())
                             }
                         }
                     },

@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::utils::file::expand_tilde;
 
@@ -12,7 +12,7 @@ where
     Ok(raw.into_iter().map(|s| expand_tilde(&s)).collect())
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct CommonEntriesConfig {
     #[serde(default)]
     user_dirs: bool,

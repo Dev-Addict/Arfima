@@ -4,14 +4,18 @@ mod number;
 
 use std::{fs, path::PathBuf};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use common_entries::CommonEntriesConfig;
-use error::Error;
+pub use error::Error;
 use number::NumberConfig;
 
-#[derive(Default, Deserialize)]
+pub type Result<T> = std::result::Result<T, Error>;
+
+#[derive(Default, Deserialize, Serialize)]
 pub struct Config {
+    #[serde(default)]
+    path: PathBuf,
     #[serde(default)]
     number: NumberConfig,
     #[serde(default)]
@@ -34,16 +38,33 @@ impl Config {
     pub fn mut_common_entries(&mut self) -> &mut CommonEntriesConfig {
         &mut self.common_entries
     }
-}
 
-//TODO: Save Config function and command
+    pub fn save(&self) -> Result<()> {
+        let contents: String = self.try_into()?;
+        fs::write(self.path.as_path(), contents.as_bytes())?;
+
+        Ok(())
+    }
+}
 
 impl TryFrom<PathBuf> for Config {
     type Error = Error;
 
-    fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
-        let contents = fs::read_to_string(value)?;
+    fn try_from(value: PathBuf) -> std::result::Result<Self, Self::Error> {
+        let contents = fs::read_to_string(value.clone())?;
 
-        Ok(toml::from_str::<Config>(&contents)?)
+        let mut config = toml::from_str::<Config>(&contents)?;
+
+        config.path = value;
+
+        Ok(config)
+    }
+}
+
+impl TryInto<String> for &Config {
+    type Error = Error;
+
+    fn try_into(self) -> std::result::Result<String, Self::Error> {
+        Ok(toml::to_string(self)?)
     }
 }

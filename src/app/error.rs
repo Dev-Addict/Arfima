@@ -1,7 +1,7 @@
 use std::{fmt::Display, io};
 
 use crate::{
-    directory_entry,
+    config, directory_entry,
     utils::{file::FileError, process_command},
 };
 
@@ -14,6 +14,7 @@ pub enum Error {
     RenameBufferTypeMismatch,
     File(FileError),
     Command(process_command::Error),
+    Config(config::Error),
     // Called something on a dummy that shouldn't
     NotADummy,
 }
@@ -30,6 +31,7 @@ impl Display for Error {
             Self::RenameBufferTypeMismatch => write!(f, "Rename buffer type mismatch"),
             Self::File(e) => write!(f, "File error: {e}"),
             Self::Command(e) => write!(f, "Command parse error: {e}"),
+            Self::Config(e) => write!(f, "Config error: {e}"),
             Self::NotADummy => write!(f, "Not a DUMMY!"),
         }
     }
@@ -64,5 +66,11 @@ impl From<FileError> for Error {
 impl From<process_command::Error> for Error {
     fn from(value: process_command::Error) -> Self {
         Self::Command(value)
+    }
+}
+
+impl From<config::Error> for Error {
+    fn from(value: config::Error) -> Self {
+        Self::Config(value)
     }
 }

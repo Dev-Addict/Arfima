@@ -51,6 +51,7 @@ impl QuitCommand {
 pub enum Command {
     Set(SetCommand),
     Quit(QuitCommand),
+    Save(()),
 }
 
 fn parse_option_name(input: &str) -> IResult<&str, OptionName> {
@@ -94,10 +95,15 @@ fn parse_quit_command(input: &str) -> IResult<&str, QuitCommand> {
     ))(input)
 }
 
+fn parse_save_command(input: &str) -> IResult<&str, ()> {
+    map(alt((tag("s"), tag("save"))), |_| ())(input)
+}
+
 fn parse_any_command(input: &str) -> IResult<&str, Command> {
     alt((
         map(parse_set_command, Command::Set),
         map(parse_quit_command, Command::Quit),
+        map(parse_save_command, Command::Save),
     ))(input)
 }
 
