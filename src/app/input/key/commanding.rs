@@ -4,7 +4,7 @@ use crate::{
     app::{App, InputMode, widgets::types::InputState},
     utils::{
         parse_command,
-        process_command::{Command, OptionName, SetCommand},
+        process_command::{BooleanOption, Command, SetCommand, SetOption},
     },
 };
 
@@ -81,16 +81,27 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                                 SetCommand::Enable(_) => true,
                                 SetCommand::Disable(_) => false,
                                 SetCommand::Toggle(_) => !app.config.number().active(),
+                                SetCommand::Set(option) => match option {
+                                    SetOption::HistorySize(size) => {
+                                        app.config.mut_history().set_size(size);
+
+                                        app.command_history.set_size(size);
+
+                                        app.input_mode = InputMode::Normal { precommand: None };
+
+                                        return true;
+                                    }
+                                },
                             };
 
                             match command {
                                 SetCommand::Enable(option)
                                 | SetCommand::Disable(option)
                                 | SetCommand::Toggle(option) => match option {
-                                    OptionName::Number => {
+                                    BooleanOption::Number => {
                                         app.config.mut_number().set_active(active);
                                     }
-                                    OptionName::RelativeNumber => {
+                                    BooleanOption::RelativeNumber => {
                                         app.config.mut_number().set_relative(active);
 
                                         if active {
@@ -98,6 +109,11 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
                                         }
                                     }
                                 },
+                                SetCommand::Set(_) => {
+                                    app.input_mode = InputMode::Normal { precommand: None };
+
+                                    return false;
+                                }
                             }
 
                             app.error = None;

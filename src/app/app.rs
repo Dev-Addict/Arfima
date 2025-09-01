@@ -18,8 +18,6 @@ use super::{
     windows::{DummyWindow, FileManagerWindow},
 };
 
-// TODO: Add command history buffer size to config
-
 pub struct App {
     running: bool,
     pub input_mode: InputMode,
@@ -40,8 +38,8 @@ impl App {
                 input_mode: InputMode::Normal { precommand: None },
                 error: None,
                 window: Box::new(FileManagerWindow::new(directory)?),
+                command_history: CircularBuffer::new(config.history().size()),
                 config,
-                command_history: CircularBuffer::new(50),
                 event_rx: rx,
             },
             tx,

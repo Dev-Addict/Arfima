@@ -4,7 +4,7 @@ pub struct CircularBuffer<T> {
     current: usize,
 }
 
-impl<T> CircularBuffer<T> {
+impl<T: Default> CircularBuffer<T> {
     pub fn new(size: usize) -> Self {
         Self {
             size,
@@ -28,4 +28,7 @@ impl<T> CircularBuffer<T> {
         let diff: usize = (diff % size + size).try_into().unwrap_or(1);
         self.vec.get((self.current + diff) % self.size)
     }
+
+    // TODO: Implement set size
+    pub fn set_size(&mut self, _size: usize) {}
 }

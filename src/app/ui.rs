@@ -32,6 +32,7 @@ pub fn render_ui(app: &mut App, frame: &mut Frame) {
         render_error(frame, layout[1], e);
     } else {
         render_instructions(frame, layout[1]);
+        frame.render_widget(format!("{}", app.config.history().size()), layout[1]);
     }
 
     match &app.input_mode {

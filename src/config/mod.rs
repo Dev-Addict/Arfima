@@ -1,5 +1,6 @@
 mod common_entries;
 mod error;
+mod history;
 mod number;
 
 use std::{fs, path::PathBuf};
@@ -8,18 +9,21 @@ use serde::{Deserialize, Serialize};
 
 use common_entries::CommonEntriesConfig;
 pub use error::Error;
+use history::HistoryConfig;
 use number::NumberConfig;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Default, Deserialize, Serialize)]
 pub struct Config {
-    #[serde(default)]
+    #[serde(default, skip_serializing)]
     path: PathBuf,
     #[serde(default)]
     number: NumberConfig,
     #[serde(default)]
     common_entries: CommonEntriesConfig,
+    #[serde(default)]
+    history: HistoryConfig,
 }
 
 impl Config {
@@ -37,6 +41,14 @@ impl Config {
 
     pub fn mut_common_entries(&mut self) -> &mut CommonEntriesConfig {
         &mut self.common_entries
+    }
+
+    pub fn history(&self) -> &HistoryConfig {
+        &self.history
+    }
+
+    pub fn mut_history(&mut self) -> &mut HistoryConfig {
+        &mut self.history
     }
 
     pub fn save(&self) -> Result<()> {
