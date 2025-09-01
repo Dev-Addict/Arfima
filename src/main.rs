@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 mod app;
+mod command;
 mod config;
 mod data;
 mod directory_entry;

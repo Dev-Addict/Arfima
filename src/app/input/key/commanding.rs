@@ -2,10 +2,7 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{
     app::{App, InputMode, widgets::types::InputState},
-    utils::{
-        parse_command,
-        process_command::{BooleanOption, Command, SetCommand, SetOption},
-    },
+    command::{BooleanOption, Command, SetCommand, SetOption, parse_command},
 };
 
 // TODO: Handle the commands somewhere else

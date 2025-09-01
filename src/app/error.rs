@@ -1,9 +1,6 @@
 use std::{fmt::Display, io};
 
-use crate::{
-    config, directory_entry,
-    utils::{file::FileError, process_command},
-};
+use crate::{command, config, directory_entry, utils::file::FileError};
 
 #[derive(Debug)]
 pub enum Error {
@@ -13,7 +10,7 @@ pub enum Error {
     IncorrentInputMode,
     RenameBufferTypeMismatch,
     File(FileError),
-    Command(process_command::Error),
+    Command(command::Error),
     Config(config::Error),
     // Called something on a dummy that shouldn't
     NotADummy,
@@ -63,8 +60,8 @@ impl From<FileError> for Error {
     }
 }
 
-impl From<process_command::Error> for Error {
-    fn from(value: process_command::Error) -> Self {
+impl From<command::Error> for Error {
+    fn from(value: command::Error) -> Self {
         Self::Command(value)
     }
 }
