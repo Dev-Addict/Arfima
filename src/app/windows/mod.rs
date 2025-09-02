@@ -6,4 +6,4 @@ mod split;
 pub use common_entries::CommonEntriesWindow;
 pub use dummy::DummyWindow;
 pub use file_manager::FileManagerWindow;
-pub use split::Split;
+pub use split::SplitWindow;
