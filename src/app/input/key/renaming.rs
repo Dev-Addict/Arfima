@@ -12,8 +12,10 @@ pub fn handle(app: &mut App, key: &KeyEvent) -> bool {
             }
             (_, KeyCode::Char(c)) => state.insert_char(c),
             (_, KeyCode::Backspace) => state.remove_char(),
-            (_, KeyCode::Left) => state.left(),
-            (_, KeyCode::Right) => state.right(),
+            (KeyModifiers::NONE, KeyCode::Left) => state.left(false),
+            (KeyModifiers::SHIFT, KeyCode::Left) => state.left(true),
+            (KeyModifiers::NONE, KeyCode::Right) => state.right(false),
+            (KeyModifiers::SHIFT, KeyCode::Right) => state.right(true),
             (_, KeyCode::Home) => state.set_cursor_position(0),
             (_, KeyCode::End) => state.set_cursor_position(state.buffer().chars().count()),
             _ => {

@@ -1,3 +1,3 @@
 mod input_state;
 
-pub use input_state::InputState;
+pub use input_state::{InputState, InputStateMode};
